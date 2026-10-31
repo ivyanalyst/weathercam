@@ -1,0 +1,7 @@
+seed: 42
+memory:
+  limit_mb: 3000
+paths:
+  data_dir: data
+  dawn_dir: data/DAWN
+  outputs_dir: outputs
