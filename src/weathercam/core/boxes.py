@@ -58,3 +58,15 @@ def from_yolo(cx: float, cy: float, w: float, h: float, img_w: float, img_h: flo
     center_x = cx * img_w
     center_y = cy * img_h
     return Box(center_x - half_w, center_y - half_h, center_x + half_w, center_y + half_h)
+
+
+def from_voc(xmin: float, ymin: float, xmax: float, ymax: float) -> Box:
+    if xmax < xmin or ymax < ymin:
+        raise ValueError(f"inverted VOC box: ({xmin}, {ymin}, {xmax}, {ymax})")
+    return Box(xmin, ymin, xmax + 1, ymax + 1)
+
+
+def to_voc(box: Box) -> tuple[float, float, float, float]:
+    if box.width < 1 or box.height < 1:
+        raise ValueError(f"box too small for VOC inclusive coordinates: {box}")
+    return (box.x1, box.y1, box.x2 - 1, box.y2 - 1)
