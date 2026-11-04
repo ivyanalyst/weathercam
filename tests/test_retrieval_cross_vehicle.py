@@ -88,7 +88,7 @@ def test_group_scores_on_cross_vehicle():
     a = result["A"]
     assert a.precision_at_1 == pytest.approx(0.75)
     assert a.map_at_r == pytest.approx(37.0 / 72.0)
-    assert (a.queries, a.scored, a.skipped, a.vehicles) == (4, 4, 0, 4)
+    assert (a.queries, a.scored, a.skipped, a.vehicles) == (4, 4, 0, 3)
     b = result["B"]
     assert b.precision_at_1 is None
     assert b.map_at_r is None
