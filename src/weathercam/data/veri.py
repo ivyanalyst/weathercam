@@ -147,3 +147,57 @@ def named_items(labels: Labels, colors: dict[int, str], types: dict[int, str]) -
             )
         )
     return tuple(result)
+
+
+class VeriReader:
+    def __init__(self, source):
+        path = Path(source)
+        self._zip = None
+        self._folder = None
+        self._closed = False
+        if path.suffix.lower() == ".zip":
+            if not path.is_file():
+                raise FileNotFoundError(f"{path} not found")
+            try:
+                self._zip = zipfile.ZipFile(path)
+            except zipfile.BadZipFile as err:
+                raise ValueError(f"not a zip archive: {path}") from err
+        else:
+            if not path.exists():
+                raise FileNotFoundError(f"{path} not found")
+            if not path.is_dir():
+                raise ValueError(f"not a directory: {path}")
+            self._folder = path
+
+    @property
+    def closed(self) -> bool:
+        return self._closed
+
+    def read_image(self, split: str, name: str) -> bytes:
+        if self._closed:
+            raise ValueError("reader is closed")
+        if split not in SPLITS:
+            raise ValueError(f"unknown split: {split!r}")
+        if not name or name in (".", "..") or "/" in name or "\\" in name:
+            raise ValueError(f"bad image name: {name!r}")
+        if self._zip is not None:
+            member = f"{ZIP_ROOT}/image_{split}/{name}"
+            try:
+                return self._zip.read(member)
+            except KeyError as err:
+                raise FileNotFoundError(f"{member} not in archive") from err
+        return (self._folder / f"image_{split}" / name).read_bytes()
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        if self._zip is not None:
+            self._zip.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        self.close()
+        return False
