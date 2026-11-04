@@ -13,11 +13,20 @@ from weathercam.data.imagecodec import decode_rgb
 from weathercam.data.pipeline import BatchLoader
 from weathercam.data.split import group_split
 from weathercam.data.veri import VeriReader, named_items, read_labels, read_names
-from weathercam.retrieval.evaluate import group_scores, overall_score, query_scores
+from weathercam.retrieval.evaluate import (
+    cross_vehicle_scores,
+    group_scores,
+    overall_score,
+    query_scores,
+)
 from weathercam.retrieval.features import color_histograms
 from weathercam.retrieval.index import BruteForceIndex
 
 BINS = 8
+CROSS_PROTOCOL = (
+    "colour and type only: the gallery excludes every image of the query vehicle; "
+    "relevant means the same attribute on a different vehicle"
+)
 PROTOCOL = (
     "within-split leave-one-out: every image is a query, the gallery is the whole split "
     "minus the query itself; not the VeRi standard protocol"
@@ -61,14 +70,19 @@ def evaluate(index, features, rows, guard):
     colors = [row.color for row in rows]
     types = [row.type for row in rows]
     kinds = {
-        "identity": (vehicles, colors, "color"),
-        "color": (colors, colors, "color"),
-        "type": (types, types, "type"),
+        "identity": (vehicles, colors, "color", False),
+        "color": (colors, colors, "color", False),
+        "type": (types, types, "type", False),
+        "color_cross_vehicle": (colors, colors, "color", True),
+        "type_cross_vehicle": (types, types, "type", True),
     }
     result = {}
-    for kind, (labels, groups, grouped_by) in kinds.items():
+    for kind, (labels, groups, grouped_by, cross) in kinds.items():
         start = time.perf_counter()
-        scores = query_scores(index, features, labels)
+        if cross:
+            scores = cross_vehicle_scores(index, features, labels, vehicles)
+        else:
+            scores = query_scores(index, features, labels)
         table = group_scores(scores, groups, vehicles)
         result[kind] = {
             "grouped_by": grouped_by,
@@ -106,6 +120,7 @@ def main():
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
     payload = {
         "protocol": PROTOCOL,
+        "cross_vehicle_protocol": CROSS_PROTOCOL,
         "features": "joint RGB colour histogram, %d bins per channel, %d dimensions" % (BINS, features.shape[1]),
         "split": args.split,
         "slice": args.limit,
