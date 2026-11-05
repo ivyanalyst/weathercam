@@ -131,6 +131,9 @@ def main():
     torch.set_num_threads(args.threads)
     print("torch threads reset to", torch.get_num_threads())
 
+    done = [0]
+    empty = []
+
     def process(item):
         name, jpg, xml = item
         annotation = load_annotation(xml)
@@ -154,13 +157,19 @@ def main():
         scores = result.boxes.conf.cpu().numpy().tolist()
         labels = result.boxes.cls.cpu().numpy().astype(int).tolist()
         detections = to_detections(boxes, scores, labels, label_map, width, height)
-        guard.check()
+        current_rss = guard.check()
+        if not detections:
+            empty.append(name)
+        done[0] += 1
+        if done[0] % 100 == 0:
+            print("done", done[0], "of", len(items), "| rss mb", round(current_rss, 1), flush=True)
         prediction = ImagePrediction(name=name, width=width, height=height, detections=detections)
         return prediction, orientation, float(result.speed["inference"])
 
     with track_memory() as memory:
         outputs, stats = measure_latency(process, items, warmup=1)
     peak = peak_rss_mb()
+    print("images with no mapped detections", len(empty), empty[:10])
 
     if len(outputs) != len(items):
         print("result count", len(outputs), "!= items", len(items))
