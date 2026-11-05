@@ -9,6 +9,8 @@ def to_detections(boxes, scores, labels, label_map, width, height) -> list[Detec
     if not (math.isfinite(width) and math.isfinite(height) and width > 0 and height > 0):
         raise ValueError(f"image size must be positive and finite, got {width}x{height}")
     boxes = np.asarray(boxes, dtype=np.float64)
+    if boxes.shape == (0,):
+        boxes = boxes.reshape(0, 4)
     if boxes.ndim != 2 or boxes.shape[1] != 4:
         raise ValueError(f"boxes must have shape (N, 4), got {boxes.shape}")
     count = boxes.shape[0]

@@ -168,3 +168,22 @@ def test_image_size_must_be_positive():
         to_detections(boxes, np.array([0.9]), np.array([2]), LABELS, 0, 100)
     with pytest.raises(ValueError, match="image size"):
         to_detections(boxes, np.array([0.9]), np.array([2]), LABELS, 100, -1)
+
+
+def test_empty_python_lists_give_empty_list():
+    assert to_detections([], [], [], LABELS, 10, 10) == []
+
+
+def test_one_dimensional_non_empty_boxes_raise():
+    with pytest.raises(ValueError, match="boxes"):
+        to_detections(np.zeros(4), np.zeros(1), np.zeros(1, dtype=np.int64), LABELS, 10, 10)
+
+
+def test_empty_boxes_with_wrong_columns_raise():
+    with pytest.raises(ValueError, match="boxes"):
+        to_detections(np.zeros((0, 3)), np.zeros(0), np.zeros(0, dtype=np.int64), LABELS, 10, 10)
+
+
+def test_empty_boxes_with_scores_raise():
+    with pytest.raises(ValueError, match="scores"):
+        to_detections([], np.zeros(1), np.zeros(1, dtype=np.int64), LABELS, 10, 10)
