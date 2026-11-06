@@ -34,6 +34,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", default="outputs/dawn_split/split_v2.json")
     parser.add_argument("--dawn-dir", default="data/DAWN")
+    parser.add_argument("--image-dir", default=None)
+    parser.add_argument("--voc-dir", default=None)
     parser.add_argument("--out", required=True)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--memory-limit-mb", type=int, default=3000)
@@ -44,6 +46,8 @@ def main():
     if out.exists():
         sys.exit(f"EXISTS: {out}")
     dawn_dir = Path(args.dawn_dir)
+    image_dir = Path(args.image_dir) if args.image_dir else None
+    voc_dir = Path(args.voc_dir) if args.voc_dir else dawn_dir
     split = json.loads(Path(args.split).read_text())
     guard = MemoryGuard(args.memory_limit_mb)
     errors = []
@@ -67,8 +71,8 @@ def main():
                 errors.append((rel, "duplicate stem"))
                 continue
             stems.add(stem)
-            src = dawn_dir / rel
-            annotation = load_annotation(xml_path(dawn_dir, rel))
+            src = image_dir / Path(rel).name if image_dir is not None else dawn_dir / rel
+            annotation = load_annotation(xml_path(voc_dir, rel))
             with Image.open(src) as image:
                 tag = image.getexif().get(ORIENTATION_TAG)
                 size = image.size
