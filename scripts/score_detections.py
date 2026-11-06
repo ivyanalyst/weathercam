@@ -4,6 +4,7 @@ from pathlib import Path
 
 from weathercam.core.types import Box, Detection
 from weathercam.data.dawn import load_annotation
+from weathercam.data.splitfile import load_split_paths
 from weathercam.detection.classmap import CLASS_NAMES, dawn_class_map
 from weathercam.detection.dawn_eval import (
     VEHICLE_LABEL,
@@ -62,7 +63,11 @@ def main():
     parser.add_argument("--latency", default="outputs/detections/yolo11m_640_latency.json")
     parser.add_argument("--dawn-dir", default="data/DAWN")
     parser.add_argument("--display-view", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--split-file", default=None)
+    parser.add_argument("--part", choices=("train", "val", "test"), default=None)
     args = parser.parse_args()
+    if (args.split_file is None) != (args.part is None):
+        raise SystemExit("--split-file and --part must be given together")
 
     check_mirror()
     print("mirror self-check passed")
@@ -89,8 +94,22 @@ def main():
 
     prediction_set = load_predictions(args.predictions)
     mapping = dawn_class_map()
+    wanted = None
+    if args.split_file:
+        wanted = {}
+        for rel in load_split_paths(args.split_file, args.part):
+            key = (rel.split("/", 1)[0], Path(rel).stem)
+            if key in wanted:
+                raise SystemExit(f"duplicate key in split: {key}")
+            wanted[key] = rel
+    found = set()
     names, weathers, predictions, truths, widths = [], [], [], [], []
     for image in prediction_set.images:
+        key = (image.name.split("/", 1)[0], Path(image.name).stem)
+        if wanted is not None:
+            if key not in wanted:
+                continue
+            found.add(key)
         annotation = load_annotation(xml_path(args.dawn_dir, image.name))
         if (annotation.width, annotation.height) != (image.width, image.height):
             raise SystemExit(f"size mismatch for {image.name}")
@@ -99,8 +118,15 @@ def main():
         predictions.append(list(image.detections))
         truths.append(ground_truth_detections(annotation, mapping))
         widths.append(float(image.width))
+    if wanted is not None:
+        missing = sorted(set(wanted) - found)
+        if missing:
+            raise SystemExit(f"{len(missing)} split images have no prediction, first: {missing[:3]}")
+        print("split part", args.part, "|", len(names), "images kept of", len(prediction_set.images))
+        print("note: latency lines above come from the full prediction run, not this part")
     tags = prediction_set.settings.get("exif_orientation", {})
-    tagged = {name: tag for name, tag in tags.items() if tag == 2}
+    kept = set(names)
+    tagged = {name: tag for name, tag in tags.items() if tag == 2 and name in kept}
     index = {name: i for i, name in enumerate(names)}
     raw_truths = truths
     if args.display_view:
