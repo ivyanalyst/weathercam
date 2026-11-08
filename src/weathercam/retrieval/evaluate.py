@@ -158,3 +158,58 @@ def cross_vehicle_scores(
             first[position] = 1.0 if hits[0] else 0.0
             average[position] = average_precision_at_r(hits, needed)
     return QueryScores(first, average, relevant)
+
+
+def camera_aware_scores(
+    index: VectorIndex,
+    queries: np.ndarray,
+    vehicles: Sequence | np.ndarray,
+    cameras: Sequence | np.ndarray,
+    block_size: int = 512,
+) -> QueryScores:
+    if block_size < 1:
+        raise ValueError("block_size must be at least 1")
+    queries = np.asarray(queries)
+    if queries.ndim != 2:
+        raise ValueError("queries must be two-dimensional")
+    count = queries.shape[0]
+    if count == 0:
+        raise ValueError("no queries")
+    if len(index) != count:
+        raise ValueError("the index must hold exactly the queries")
+    vehicle_array = np.asarray(vehicles)
+    camera_array = np.asarray(cameras)
+    if vehicle_array.shape != (count,) or camera_array.shape != (count,):
+        raise ValueError("vehicles and cameras must have one entry per query")
+    _, vehicle_codes, vehicle_sizes = np.unique(
+        vehicle_array, return_inverse=True, return_counts=True
+    )
+    vehicle_codes = vehicle_codes.reshape(-1)
+    unique_cameras, camera_codes = np.unique(camera_array, return_inverse=True)
+    camera_codes = camera_codes.reshape(-1)
+    pair = vehicle_codes * unique_cameras.shape[0] + camera_codes
+    pair_sizes = np.bincount(pair)
+    relevant = (vehicle_sizes[vehicle_codes] - pair_sizes[pair]).astype(np.int64)
+    if relevant.max() == 0:
+        raise ValueError("every query was skipped")
+    needed_depth = relevant + pair_sizes[pair] - 1
+    depth = int(needed_depth[relevant > 0].max())
+    first = np.zeros(count, dtype=np.float64)
+    average = np.zeros(count, dtype=np.float64)
+    for start in range(0, count, block_size):
+        stop = min(start + block_size, count)
+        result = index.search(queries[start:stop], depth, exclude=np.arange(start, stop))
+        for row in range(stop - start):
+            position = start + row
+            needed = int(relevant[position])
+            if needed == 0:
+                continue
+            candidates = result.indices[row]
+            same_pair = (vehicle_codes[candidates] == vehicle_codes[position]) & (
+                camera_codes[candidates] == camera_codes[position]
+            )
+            kept = candidates[~same_pair][:needed]
+            hits = vehicle_codes[kept] == vehicle_codes[position]
+            first[position] = 1.0 if hits[0] else 0.0
+            average[position] = average_precision_at_r(hits, needed)
+    return QueryScores(first, average, relevant)

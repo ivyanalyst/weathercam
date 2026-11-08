@@ -6,6 +6,7 @@ import pytest
 from weathercam.retrieval.evaluate import (
     GroupScore,
     QueryScores,
+    camera_aware_scores,
     group_scores,
     overall_score,
     query_scores,
@@ -215,3 +216,33 @@ def test_group_score_is_frozen():
     score = GroupScore(0.5, 0.25, 2, 2, 0, 1)
     with pytest.raises(dataclasses.FrozenInstanceError):
         score.scored = 3
+
+
+def test_camera_aware_ignores_same_camera_lookalikes():
+    # rows: A cam1, A cam1 (lookalike), B cam1, A cam2
+    vectors = np.array([(1, 0), (1, 0.01), (1, 0.2), (0, 1)], dtype=np.float64)
+    vehicles = ["A", "A", "B", "A"]
+    cameras = [1, 1, 1, 2]
+    scores = camera_aware_scores(_index(vectors), vectors, vehicles, cameras)
+    assert scores.relevant.tolist() == [1, 1, 0, 2]
+    assert scores.precision_at_1[[0, 1, 3]].tolist() == [0.0, 0.0, 0.0]
+    assert scores.average_precision[3] == pytest.approx(0.25)
+
+
+def test_camera_aware_perfect_embedding():
+    vectors = np.array([(1, 0), (1, 0.01), (1, -0.01), (0, 1)], dtype=np.float64)
+    vehicles = ["A", "A", "A", "B"]
+    cameras = [1, 1, 2, 1]
+    scores = camera_aware_scores(_index(vectors), vectors, vehicles, cameras)
+    assert scores.relevant.tolist() == [1, 1, 2, 0]
+    assert scores.precision_at_1[:3].tolist() == [1.0, 1.0, 1.0]
+    assert scores.average_precision[:3].tolist() == pytest.approx([1.0, 1.0, 1.0])
+
+
+def test_camera_aware_rejects_bad_input():
+    vectors = np.array([(1, 0), (0, 1)], dtype=np.float64)
+    index = _index(vectors)
+    with pytest.raises(ValueError):
+        camera_aware_scores(index, vectors, ["A", "B"], [1])
+    with pytest.raises(ValueError):
+        camera_aware_scores(index, vectors, ["A", "B"], [1, 1])  # every query skipped
