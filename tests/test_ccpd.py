@@ -4,10 +4,13 @@ from weathercam.data.ccpd import (
     ADS,
     ALPHABETS,
     PROVINCES,
+    PROVINCES_LATIN,
     decode_plate,
+    from_latin_plate,
     hull_box,
     parse_name,
     subset_of,
+    to_latin_plate,
 )
 
 OFFICIAL = "025-95_113-154&383_386&473-386&473_177&454_154&383_363&402-0_0_22_27_27_33_16-37-15.jpg"
@@ -116,3 +119,51 @@ def test_subset_of():
 def test_subset_of_bare_name_raises():
     with pytest.raises(ValueError):
         subset_of(BASE)
+
+
+def test_latin_table_size():
+    assert len(PROVINCES_LATIN) == len(PROVINCES) == 34
+
+
+def test_latin_codes_are_unique_uppercase_ascii():
+    assert len(set(PROVINCES_LATIN)) == len(PROVINCES_LATIN)
+    assert all(code.isascii() and code.isalpha() and code.isupper() for code in PROVINCES_LATIN)
+
+
+def test_to_latin_plate_official_example():
+    assert to_latin_plate("皖AY339S") == "AH-AY339S"
+
+
+@pytest.mark.parametrize(
+    "plate, expected",
+    [
+        ("京B00000", "BJ-B00000"),
+        ("警A12345", "JG-A12345"),
+        ("学A12345", "XE-A12345"),
+        ("OA12345", "O-A12345"),
+    ],
+)
+def test_to_latin_plate_other_characters(plate, expected):
+    assert to_latin_plate(plate) == expected
+
+
+def test_latin_round_trip_for_every_province_character():
+    for province in PROVINCES:
+        plate = province + "A12345"
+        assert from_latin_plate(to_latin_plate(plate)) == plate
+
+
+def test_to_latin_plate_wrong_length_raises():
+    with pytest.raises(ValueError):
+        to_latin_plate("皖A1234")
+
+
+def test_to_latin_plate_unknown_province_raises():
+    with pytest.raises(ValueError):
+        to_latin_plate("ZA12345")
+
+
+@pytest.mark.parametrize("text", ["AH-A1234", "XX-A12345", "AHA12345"])
+def test_from_latin_plate_bad_form_raises(text):
+    with pytest.raises(ValueError):
+        from_latin_plate(text)

@@ -62,3 +62,29 @@ def subset_of(path):
         if part.startswith("ccpd_"):
             return part
     raise ValueError(f"no ccpd_ subset folder in path: {path!r}")
+
+
+# ISO 3166-2:CN province codes in PROVINCES order; JG (police) and XE (school) are ours.
+PROVINCES_LATIN = (
+    "AH", "SH", "TJ", "CQ", "HE", "SX", "NM", "LN", "JL", "HL",
+    "JS", "ZJ", "BJ", "FJ", "JX", "SD", "HA", "HB", "HN", "GD",
+    "GX", "HI", "SC", "GZ", "YN", "XZ", "SN", "GS", "QH", "NX",
+    "XJ", "JG", "XE", "O",
+)
+_TO_LATIN = dict(zip(PROVINCES, PROVINCES_LATIN))
+_FROM_LATIN = dict(zip(PROVINCES_LATIN, PROVINCES))
+
+
+def to_latin_plate(plate):
+    if len(plate) != 7:
+        raise ValueError(f"plate needs 7 characters, got {len(plate)}")
+    if plate[0] not in _TO_LATIN:
+        raise ValueError(f"unknown province character: {plate[0]!r}")
+    return f"{_TO_LATIN[plate[0]]}-{plate[1:]}"
+
+
+def from_latin_plate(text):
+    code, separator, rest = text.partition("-")
+    if not separator or code not in _FROM_LATIN or len(rest) != 6:
+        raise ValueError(f"not a Latin plate: {text!r}")
+    return _FROM_LATIN[code] + rest
