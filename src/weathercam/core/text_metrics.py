@@ -33,3 +33,32 @@ def corpus_cer(references: list[str], hypotheses: list[str]) -> float:
         raise ValueError("total reference length must be greater than zero")
     edits = sum(levenshtein(r, h) for r, h in zip(references, hypotheses))
     return edits / total
+
+
+def _check_pair(references: list[str], hypotheses: list[str]) -> None:
+    if len(references) != len(hypotheses):
+        raise ValueError(
+            f"references and hypotheses must have the same length, got {len(references)} and {len(hypotheses)}"
+        )
+    if not references:
+        raise ValueError("references must not be empty")
+
+
+def exact_match_rate(references: list[str], hypotheses: list[str]) -> float:
+    _check_pair(references, hypotheses)
+    return sum(r == h for r, h in zip(references, hypotheses)) / len(references)
+
+
+def position_accuracy(references: list[str], hypotheses: list[str]) -> list[float]:
+    _check_pair(references, hypotheses)
+    width = len(references[0])
+    if width == 0:
+        raise ValueError("references must not be empty strings")
+    if any(len(r) != width for r in references):
+        raise ValueError("all references must have the same length")
+    hits = [0] * width
+    for r, h in zip(references, hypotheses):
+        for i in range(min(width, len(h))):
+            if r[i] == h[i]:
+                hits[i] += 1
+    return [count / len(references) for count in hits]
