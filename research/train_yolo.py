@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument("--device", default="0")
     parser.add_argument("--plots", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--skip-weights-check", action="store_true")
+    parser.add_argument("--expect-names", nargs="+", default=EXPECTED)
     return parser.parse_args()
 
 
@@ -53,7 +54,7 @@ def main():
     data_dir = Path(args.data_dir).resolve()
     source = yaml.safe_load((data_dir / "data.yaml").read_text())
     names = {int(key): value for key, value in source["names"].items()}
-    if [names[i] for i in sorted(names)] != EXPECTED:
+    if [names[i] for i in sorted(names)] != args.expect_names:
         sys.exit(f"unexpected class names: {names}")
     for part in ("train", "val"):
         if not (data_dir / "images" / part).is_dir():
