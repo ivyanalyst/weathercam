@@ -1,9 +1,11 @@
 import math
 
 import numpy as np
+from PIL import Image
 
 from weathercam.core.boxes import clip_box
 from weathercam.core.types import Box
+from weathercam.data.augment import _check_image
 
 
 def expand_box(box, margin, width, height):
@@ -40,3 +42,14 @@ def jitter_box(box, rng, shift, scale):
     w = box.width * (1 + rng.uniform(-scale, scale))
     h = box.height * (1 + rng.uniform(-scale, scale))
     return Box(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2)
+
+
+def resize_rgb(image, height, width):
+    if height < 1 or width < 1:
+        raise ValueError(f"size must be positive, got {height}x{width}")
+    checked = _check_image(image)
+    channels = [
+        np.asarray(Image.fromarray(checked[:, :, c]).resize((width, height), Image.Resampling.BICUBIC))
+        for c in range(3)
+    ]
+    return np.clip(np.stack(channels, axis=2), 0.0, 1.0).astype(np.float32)

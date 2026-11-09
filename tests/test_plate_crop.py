@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from weathercam.core.types import Box
-from weathercam.plates.crop import crop_array, expand_box, jitter_box, pixel_box
+from weathercam.plates.crop import crop_array, expand_box, jitter_box, pixel_box, resize_rgb
 
 BOX = Box(100, 200, 300, 260)
 
@@ -100,3 +100,59 @@ def test_jitter_box_different_seed_changes_result():
 def test_jitter_box_invalid_arguments_raise(shift, scale):
     with pytest.raises(ValueError):
         jitter_box(BOX, np.random.default_rng(0), shift, scale)
+
+
+def test_resize_rgb_shape_and_dtype():
+    out = resize_rgb(np.zeros((40, 120, 3), dtype=np.float32), 24, 48)
+    assert out.shape == (24, 48, 3)
+    assert out.dtype == np.float32
+
+
+def test_resize_rgb_constant_image_stays_constant():
+    image = np.full((30, 90, 3), 0.25, dtype=np.float32)
+    assert resize_rgb(image, 12, 36) == pytest.approx(0.25, abs=1e-5)
+
+
+def test_resize_rgb_output_stays_in_unit_range():
+    checker = (np.indices((16, 16)).sum(axis=0) % 2).astype(np.float32)
+    image = np.repeat(checker[:, :, None], 3, axis=2)
+    out = resize_rgb(image, 37, 53)
+    assert out.min() >= 0.0 and out.max() <= 1.0
+
+
+def test_resize_rgb_same_size_is_identity():
+    image = np.random.default_rng(0).random((20, 60, 3)).astype(np.float32)
+    assert resize_rgb(image, 20, 60) == pytest.approx(image, abs=1e-6)
+
+
+def test_resize_rgb_keeps_orientation():
+    ramp = np.tile(np.linspace(0.0, 1.0, 64, dtype=np.float32), (16, 1))
+    out = resize_rgb(np.repeat(ramp[:, :, None], 3, axis=2), 8, 16)
+    assert out[:, 0].mean() < out[:, -1].mean()
+
+
+def test_resize_rgb_does_not_modify_input():
+    image = np.random.default_rng(1).random((20, 60, 3)).astype(np.float32)
+    before = image.copy()
+    resize_rgb(image, 10, 30)
+    assert np.array_equal(image, before)
+
+
+@pytest.mark.parametrize(
+    "image",
+    [
+        np.zeros((4, 4, 3), dtype=np.uint8),
+        np.zeros((4, 4), dtype=np.float32),
+        np.full((4, 4, 3), 2.0, dtype=np.float32),
+        [[1]],
+    ],
+)
+def test_resize_rgb_rejects_bad_image(image):
+    with pytest.raises(ValueError):
+        resize_rgb(image, 4, 4)
+
+
+@pytest.mark.parametrize("height, width", [(0, 10), (10, 0), (-1, 5)])
+def test_resize_rgb_rejects_bad_size(height, width):
+    with pytest.raises(ValueError):
+        resize_rgb(np.zeros((4, 4, 3), dtype=np.float32), height, width)
