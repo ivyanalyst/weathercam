@@ -5,6 +5,7 @@ from weathercam.review.verdicts import (
     append_record,
     count_verdicts,
     elements_for,
+    judge,
     latest,
     read_log,
     record_from_line,
@@ -213,3 +214,45 @@ def test_counts_filter_by_source_and_element():
     counts = count_verdicts(records, "veri", "colour")
     assert counts["correct"] == 1 and counts["unsure"] == 1
     assert sum(counts.values()) == 2
+
+
+def test_judge_categorical_match():
+    for element, value in (("colour", "red"), ("type", "sedan"), ("brand", "kia"), ("view", "front")):
+        assert judge(element, value, value) == ("correct", None)
+
+
+def test_judge_categorical_mismatch_keeps_the_answer():
+    assert judge("colour", "black", "green") == ("wrong", "green")
+    assert judge("view", "front", "rear") == ("wrong", "rear")
+
+
+def test_judge_vehicle_visible():
+    assert judge("vehicle_visible", "vehicle", "vehicle") == ("correct", None)
+    assert judge("vehicle_visible", "vehicle", "no_vehicle") == ("wrong", None)
+
+
+def test_judge_plate_text():
+    assert judge("plate_text", "皖A12345", "皖A12345") == ("correct", None)
+    assert judge("plate_text", "皖A12345", "皖A12346") == ("wrong", "皖A12346")
+
+
+def test_judge_unsupported_elements_raise():
+    for element in ("plate_box", "detector_box", "label_box"):
+        with pytest.raises(ValueError):
+            judge(element, [1, 2, 3, 4], [1, 2, 3, 4])
+    with pytest.raises(ValueError):
+        judge("colour", None, "red")
+
+
+def test_judge_bad_answers_raise():
+    bad = (("colour", "red", ""), ("colour", "red", None), ("vehicle_visible", "vehicle", "car"))
+    for element, model, answer in bad:
+        with pytest.raises(ValueError):
+            judge(element, model, answer)
+
+
+def test_judge_output_is_accepted_by_record():
+    verdict, corrected = judge("colour", "black", "green")
+    assert rec(model_value="black", verdict=verdict, corrected=corrected).corrected == "green"
+    verdict, corrected = judge("vehicle_visible", "vehicle", "no_vehicle")
+    assert rec(element="vehicle_visible", model_value="vehicle", verdict=verdict, corrected=corrected).verdict == "wrong"

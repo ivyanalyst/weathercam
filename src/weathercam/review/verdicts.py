@@ -147,3 +147,26 @@ def count_verdicts(records, source, element):
         if src == source and elem == element:
             counts[record.verdict] += 1
     return counts
+
+
+CATEGORICAL = ("colour", "type", "brand", "view", "plate_text")
+
+
+def judge(element, model_value, answer):
+    """Verdict and correction for a reviewer's own answer against the model value.
+
+    Not for boxes. vehicle_visible answers are "vehicle" or "no_vehicle".
+    """
+    if model_value is None:
+        raise ValueError("there is no model value to judge against")
+    if not isinstance(answer, str) or answer == "":
+        raise ValueError("the answer must be a non-empty string")
+    if element == "vehicle_visible":
+        if answer not in ("vehicle", "no_vehicle"):
+            raise ValueError(f"unknown vehicle_visible answer: {answer!r}")
+        return ("correct", None) if answer == "vehicle" else ("wrong", None)
+    if element not in CATEGORICAL:
+        raise ValueError(f"judge does not handle element {element!r}")
+    if answer == model_value:
+        return ("correct", None)
+    return ("wrong", answer)
