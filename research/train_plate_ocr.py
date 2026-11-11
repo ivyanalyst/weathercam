@@ -41,7 +41,7 @@ def parse_args():
     p.add_argument("--out-dir", required=True)
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--batch", type=int, default=128)
-    p.add_argument("--lr", type=float, default=1e-3)
+    p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--wd", type=float, default=0.01)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--device", default="cuda")
@@ -319,7 +319,12 @@ def main():
     steps = n_train // args.batch if drop_last else math.ceil(n_train / args.batch)
     model = PlateNet().to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs * steps)
+    total_steps = args.epochs * steps
+    warmup = min(steps, max(1, total_steps // 2))
+    scheduler = torch.optim.lr_scheduler.LambdaLR(
+        optimizer,
+        lambda s: (s + 1) / warmup if s < warmup else 0.5 * (1 + math.cos(math.pi * (s - warmup) / max(1, total_steps - warmup))),
+    )
     weights = torch.from_numpy(probs)
     best, best_epoch = -1.0, 0
     best_path = out / "ocr_weights.pt"
@@ -345,7 +350,7 @@ def main():
                 loss.backward()
                 optimizer.step()
                 scheduler.step()
-                total += float(loss) * len(y)
+                total += float(loss.detach()) * len(y)
                 seen += len(y)
             val = metrics(predict(model, val_inputs, device), labels["val"])
             if val["pos_mean"] > best:
