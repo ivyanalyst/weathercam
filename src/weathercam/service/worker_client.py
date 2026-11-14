@@ -74,20 +74,23 @@ class WorkerClient:
         self._reader.start()
         try:
             ready = self._parse(self._next_line(float(startup_timeout_seconds)))
-            dim = ready.get("dim")
-            if (
-                ready.get("ready") is not True
-                or isinstance(dim, bool)
-                or not isinstance(dim, int)
-                or dim < 1
-            ):
-                raise WorkerError("invalid ready line")
+            self._check_ready(ready)
         except WorkerError:
             self._shutdown()
             raise
-        self._dim = dim
         self._model = str(ready.get("model", ""))
         self._pretrained = str(ready.get("pretrained", ""))
+
+    def _check_ready(self, ready):
+        dim = ready.get("dim")
+        if (
+            ready.get("ready") is not True
+            or isinstance(dim, bool)
+            or not isinstance(dim, int)
+            or dim < 1
+        ):
+            raise WorkerError("invalid ready line")
+        self._dim = dim
 
     @property
     def dim(self):
