@@ -14,13 +14,13 @@ from weathercam.core.config import load_config
 from weathercam.core.memory import MemoryGuard
 from weathercam.core.roc_metrics import roc_auc
 from weathercam.core.types import Box
-from weathercam.data.split import group_split
 from weathercam.data.veri import VeriReader
 from weathercam.detection.records import load_predictions
 from weathercam.plates.detector import best_detection
 from weathercam.plates.ocr import decode_positions
 from weathercam.retrieval.evaluate import camera_aware_scores, overall_score, query_scores
 from weathercam.retrieval.index import BruteForceIndex
+from weathercam.retrieval.innersplit import veri_inner_split
 from weathercam.service.handlers import ood_scores, weather
 from weathercam.service.heads import load_linear_head, load_metric_head, standardise
 from weathercam.service.plate_client import PlateClient
@@ -92,12 +92,7 @@ def parse_args():
 
 
 def inner_split(data, seed):
-    train_rows = np.flatnonzero(data["split"] == "train")
-    vehicles = data["vehicle_ids"][train_rows]
-    classes = list(zip(data["color_ids"][train_rows].tolist(), data["type_ids"][train_rows].tolist()))
-    fit_part, val_part = group_split(vehicles.tolist(), classes, (0.8, 0.2), seed)
-    fit_rows = train_rows[np.asarray(fit_part)]
-    val_rows = train_rows[np.asarray(val_part)]
+    fit_rows, val_rows = veri_inner_split(data, seed)
     count = len(set(data["vehicle_ids"][val_rows].tolist()))
     if (len(fit_rows), len(val_rows), count) != (FIT_IMAGES, VAL_IMAGES, VAL_VEHICLES):
         sys.exit("inner split sizes differ from the recorded 29918 / 7828 / 119")
