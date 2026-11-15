@@ -1,0 +1,170 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+title: WeatherCam
+type: software
+license: AGPL-3.0-or-later
+authors:
+  - name: To Thi My Tien
+references:
+  - type: article
+    title: "Veri-Car: Towards Open-world Vehicle Information Retrieval"
+    authors:
+      - name: Andrés Muñoz
+      - name: Nancy Thomas
+      - name: Annita Vapsi
+      - name: Daniel Borrajo
+    journal: arXiv preprint
+    year: 2024
+    doi: 10.48550/arXiv.2411.06864
+  - type: article
+    title: "Veri-Car: Towards Open-world Vehicle Information Retrieval"
+    authors:
+      - name: Andrés Muñoz
+      - name: Nancy Thomas
+      - name: Annita Vapsi
+      - name: Daniel Borrajo
+    journal: Neural Computing and Applications
+    year: 2025
+    volume: 37
+    issue: 20
+    start: 15183
+    end: 15221
+  - type: conference-paper
+    title: "Out-of-Distribution Detection with Deep Nearest Neighbors"
+    authors:
+      - name: Yiyou Sun
+      - name: Yifei Ming
+      - name: Xiaojin Zhu
+      - name: Yixuan Li
+    collection-title: Proceedings of the 39th International Conference on Machine Learning
+    year: 2022
+    start: 20827
+    end: 20840
+    url: https://proceedings.mlr.press/v162/sun22d.html
+  - type: software
+    title: OpenCLIP
+    authors:
+      - name: Gabriel Ilharco
+      - name: Mitchell Wortsman
+      - name: Ross Wightman
+      - name: Cade Gordon
+      - name: Nicholas Carlini
+      - name: Rohan Taori
+      - name: Achal Dave
+      - name: Vaishaal Shankar
+      - name: Hongseok Namkoong
+      - name: John Miller
+      - name: Hannaneh Hajishirzi
+      - name: Ali Farhadi
+      - name: Ludwig Schmidt
+    version: "0.1"
+    year: 2021
+    doi: 10.5281/zenodo.5143773
+  - type: conference-paper
+    title: "Learning Transferable Visual Models From Natural Language Supervision"
+    authors:
+      - name: Alec Radford
+      - name: Jong Wook Kim
+      - name: Chris Hallacy
+      - name: A. Ramesh
+      - name: Gabriel Goh
+      - name: Sandhini Agarwal
+      - name: Girish Sastry
+      - name: Amanda Askell
+      - name: Pamela Mishkin
+      - name: Jack Clark
+      - name: Gretchen Krueger
+      - name: Ilya Sutskever
+    collection-title: ICML
+    year: 2021
+  - type: conference-paper
+    title: "LAION-5B: An open large-scale dataset for training next generation image-text models"
+    authors:
+      - name: Christoph Schuhmann
+      - name: Romain Beaumont
+      - name: Richard Vencu
+      - name: Cade W Gordon
+      - name: Ross Wightman
+      - name: Mehdi Cherti
+      - name: Theo Coombes
+      - name: Aarush Katta
+      - name: Clayton Mullis
+      - name: Mitchell Wortsman
+      - name: Patrick Schramowski
+      - name: Srivatsa R Kundurthy
+      - name: Katherine Crowson
+      - name: Ludwig Schmidt
+      - name: Robert Kaczmarczyk
+      - name: Jenia Jitsev
+    collection-title: Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track
+    year: 2022
+    url: https://openreview.net/forum?id=M3Y74vmsMcY
+  - type: conference-paper
+    title: Large-scale vehicle re-identification in urban surveillance videos
+    authors:
+      - name: Xinchen Liu
+      - name: Wu Liu
+      - name: Huadong Ma
+      - name: Huiyuan Fu
+    collection-title: ICME 2016
+    year: 2016
+    start: 1
+    end: 6
+    doi: 10.1109/ICME.2016.7553002
+  - type: conference-paper
+    title: "A Deep Learning-Based Approach to Progressive Vehicle Re-identification for Urban Surveillance"
+    authors:
+      - name: Xinchen Liu
+      - name: Wu Liu
+      - name: Tao Mei
+      - name: Huadong Ma
+    collection-title: European Conference on Computer Vision
+    year: 2016
+    start: 869
+    end: 884
+    doi: 10.1007/978-3-319-46475-6_53
+  - type: article
+    title: "PROVID: Progressive and Multimodal Vehicle Reidentification for Large-Scale Urban Surveillance"
+    authors:
+      - name: Xinchen Liu
+      - name: Wu Liu
+      - name: Tao Mei
+      - name: Huadong Ma
+    journal: IEEE Transactions on Multimedia
+    year: 2018
+    volume: 20
+    issue: 3
+    start: 645
+    end: 658
+  - type: article
+    title: "DAWN: Vehicle Detection in Adverse Weather Nature Dataset"
+    authors:
+      - name: Mourad A. Kenk
+      - name: Mahmoud Hassaballah
+    journal: arXiv preprint
+    year: 2020
+    doi: 10.48550/arXiv.2008.05402
+  - type: conference-paper
+    title: "Towards End-to-End License Plate Detection and Recognition: A Large Dataset and Baseline"
+    authors:
+      - name: Zhenbo Xu
+      - name: Wei Yang
+      - name: Ajin Meng
+      - name: Nanxue Lu
+      - name: Huan Huang
+      - name: Changchun Ying
+      - name: Liusheng Huang
+    collection-title: Proceedings of the European Conference on Computer Vision (ECCV)
+    year: 2018
+    start: 255
+    end: 271
+    doi: 10.1007/978-3-030-01261-8_16
+  - type: conference-paper
+    title: "A Large and Diverse Dataset for Improved Vehicle Make and Model Recognition"
+    authors:
+      - name: Faezeh Tafazzoli
+      - name: Hichem Frigui
+      - name: Keishin Nishiyama
+    collection-title: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) Workshops
+    year: 2017
+    doi: 10.1109/CVPRW.2017.121

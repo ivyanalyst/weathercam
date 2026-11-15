@@ -1,0 +1,70 @@
+# WeatherCam
+
+Research code for vehicle attributes, plate reading, text-to-image retrieval and data mining on CCTV-style images, with a focus on adverse weather. It is a personal learning project and is for research use only.
+
+The pipeline is inspired by Veri-Car (Muñoz et al., arXiv 2411.06864):
+
+    detect vehicle -> crop -> OOD check -> attributes (colour, type, brand) -> plate detect + read
+    -> embed -> text-to-image search -> mining / active learning
+
+Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/16, laion2b_s34b_b88k, with small heads). Test data was not used for tuning: each test set was scored once, with settings fixed beforehand.
+
+## What was not measured
+
+- Text-to-image search quality was never measured. The first retrieval version used histograms, and a zero-shot test of camera view with text prompts was a negative result (accuracy 0.603 against a 0.564 majority baseline).
+- Plate reading is weak off its training distribution: exact match 0.4470 on the test set against 0.9447 on validation. The service therefore returns a detector score and a per-position confidence, not a "confident" label.
+- Out-of-distribution AUROC does not give a usable threshold, and the high values are mostly a dataset difference.
+- The weather head is trained on DAWN only and has four classes.
+- The colour and type heads are trained on VeRi. Brand uses VMMRdb makes (43 classes including "unknown").
+
+## Results
+
+| Task | Data | Result |
+|---|---|---|
+| Colour | VeRi test | accuracy 0.8939, macro-F1 0.7605 |
+| Vehicle type | VeRi test | accuracy 0.9048, macro-F1 0.7909 |
+| Brand (make) | VMMRdb test, 43 classes | accuracy 0.8043, macro-F1 0.8102 |
+| Weather, 4 classes | DAWN test | 138/150 = 0.9200 (Wilson 0.8654-0.9536) |
+| Retrieval, plain | VeRi, leave-one-out | P@1 0.9431, mAP@R 0.4046 |
+| Retrieval, camera-aware | VeRi, leave-one-out | P@1 0.7489, mAP@R 0.3484 (raw 512-d: 0.5066, 0.1116) |
+| Out-of-distribution, kNN k=5 | DAWN, VMMRdb | AUROC 0.9988, 0.9945 |
+| Plate detector | CCPD test | IoU > 0.7 in 0.9895 of images (top-1 box only) |
+| Plate OCR | CCPD test | exact match 0.4470, CER 0.1412 |
+
+Limits that go with the table:
+
+- Brand accuracy compares with 0.025 for always predicting the most frequent class.
+- Weather: the test accuracy rests on 150 images, and the validation macro-F1 is 0.7889, so 0.92 should not be quoted alone.
+- Retrieval uses a leave-one-out protocol over vehicles, not the VeRi query/gallery split. Its mAP@R is not the VeRi-standard mAP and is not comparable to published VeRi numbers. These rows use a 128-d metric head.
+- Query expansion (k 10, weight 8) raised camera-aware P@1 to 0.7616 and mAP@R to 0.3964, but lowered plain P@1 to 0.8862.
+- The CCPD protocol (one box per image, IoU > 0.7, exact match) follows the CCPD README, but the models, subsets and splits differ from its baseline table, so the numbers are not comparable. Thirteen test images whose labelled box is not on the plate are excluded from the true-box OCR numbers only.
+- Robustness: holding one weather class out gave an OOD AUROC of about 0.73 for the kNN score against about 0.69 for the baseline. Among generic corruptions only blur caused a clear loss. Synthetic rain, snow and haze (strength 0.6) and blur (0.3) cost more than random feature noise of equal cosine similarity.
+- Selecting images for mining by k-center against random sampling gave mixed results.
+
+## Design
+
+- Metrics (IoU, NMS, AP/mAP, CER, classification, retrieval, ROC AUC), splits, augmentation, corruptions, the kNN index, OOD scoring, k-center, near-duplicate grouping and the service are own code. Libraries are used only for weights, CLIP and tests.
+- src/weathercam never imports torch or ultralytics. Code that needs them lives in research/ and runs in separate environments (Kaggle or local virtual environments). Heads and all scoring run with NumPy.
+- The service layer (src/weathercam/service) has handlers free of torch and web frameworks. Embedding and plate reading run as two subprocess workers over JSON lines, with hash-checked weights and a memory check. A web app is not built.
+- scripts/check_service.py reproduces stored validation numbers and checks that the workers agree with stored outputs on a small sample (16 images each). The plate sample was not stratified by province or subset, and uploads of other formats or with EXIF rotation were not tested.
+
+## Layout and tests
+
+- src/weathercam: library code (core metrics, data handling, attributes, retrieval, plates, review, service).
+- research/: scripts that need torch (embedding, training, detector runs) and scoring scripts; requirements-embed.txt and requirements-yolo.txt list their dependencies.
+- scripts/: data export, inspection, review and check scripts.
+- tests/: pytest suite.
+
+The main environment needs only numpy, pyyaml, psutil and pillow:
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -e .
+    pip install pytest
+    python3 -m pytest -q
+
+## Data and licences
+
+No datasets, dataset images, plate texts or trained weights are part of this repository. The datasets (VeRi, DAWN, CCPD2019, VMMRdb) must be obtained from their owners under their own terms; the terms as known are in THIRD_PARTY.md. Paths are set in configs/default.yaml and a git-ignored configs/local.yaml.
+
+The code is released under AGPL-3.0-or-later (see LICENSE); the detector dependency Ultralytics is AGPL-3.0. Third-party components and weights are listed in THIRD_PARTY.md, and references are in CITATION.cff.
