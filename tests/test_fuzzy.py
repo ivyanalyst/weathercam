@@ -14,12 +14,10 @@ def test_distance_one_substitution():
 
 
 def test_distance_one_insertion():
-    # the reading has one extra character
     assert plate_distance("皖A123456", PLATE) == 1
 
 
 def test_distance_one_deletion():
-    # the reading is missing one character
     assert plate_distance("皖A1235", PLATE) == 1
 
 
@@ -28,14 +26,13 @@ def test_distance_adjacent_swap_costs_two():
 
 
 def test_match_exactly_at_limit_and_one_below():
-    reading = "皖A12367"  # two substitutions from PLATE
+    reading = "皖A12367"
     assert plate_distance(reading, PLATE) == 2
     assert match_plate(reading, PLATE, 2) is True
     assert match_plate(reading, PLATE, 1) is False
 
 
 def test_empty_reading_never_matches():
-    # even when the limit is larger than the query length
     assert match_plate("", PLATE, 10) is False
 
 

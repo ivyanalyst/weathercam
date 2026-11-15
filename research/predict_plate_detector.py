@@ -58,7 +58,6 @@ def main():
     paths = [str(src / item["file"]) for item in items]
 
     def iter_results():
-        # ultralytics loads a whole list source into RAM and runs it as one batch, so feed it in chunks
         for start in range(0, len(paths), args.batch):
             yield from model.predict(
                 paths[start : start + args.batch],

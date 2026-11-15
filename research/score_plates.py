@@ -11,12 +11,8 @@ from weathercam.attributes.weather import wilson_interval
 from weathercam.core.text_metrics import corpus_cer, exact_match_rate, position_accuracy
 from weathercam.plates.ocr import decode_batch
 
-# Test images whose labelled box is not on the labelled plate (one reader, not ground truth).
-# Excluded from the true-box section only; they stay in the detected-box section.
 EXCLUDED = (
-    # checked at full size
     "images/022474.jpg", "images/022192.jpg", "images/024070.jpg",
-    # seen on 256-px tiles only
     "images/022458.jpg", "images/022983.jpg", "images/023008.jpg", "images/023262.jpg",
     "images/023308.jpg", "images/023530.jpg", "images/023847.jpg", "images/024844.jpg",
     "images/026860.jpg", "images/027137.jpg",

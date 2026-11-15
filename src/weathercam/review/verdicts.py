@@ -1,5 +1,3 @@
-"""Human review verdicts: record schema, per-source element rules, append-only log."""
-
 import json
 import math
 from dataclasses import asdict, dataclass
@@ -134,7 +132,6 @@ def read_log(path):
 
 
 def latest(records):
-    """Latest record per (source, image, element); later in the list wins."""
     result = {}
     for record in records:
         result[(record.source, record.image, record.element)] = record
@@ -153,10 +150,6 @@ CATEGORICAL = ("colour", "type", "brand", "view", "plate_text")
 
 
 def judge(element, model_value, answer):
-    """Verdict and correction for a reviewer's own answer against the model value.
-
-    Not for boxes. vehicle_visible answers are "vehicle" or "no_vehicle".
-    """
     if model_value is None:
         raise ValueError("there is no model value to judge against")
     if not isinstance(answer, str) or answer == "":

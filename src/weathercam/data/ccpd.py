@@ -64,7 +64,6 @@ def subset_of(path):
     raise ValueError(f"no ccpd_ subset folder in path: {path!r}")
 
 
-# ISO 3166-2:CN province codes in PROVINCES order; JG (police) and XE (school) are ours.
 PROVINCES_LATIN = (
     "AH", "SH", "TJ", "CQ", "HE", "SX", "NM", "LN", "JL", "HL",
     "JS", "ZJ", "BJ", "FJ", "JX", "SD", "HA", "HB", "HN", "GD",

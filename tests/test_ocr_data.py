@@ -20,7 +20,6 @@ def _chars(counts):
 
 
 def test_encode_matches_indices_in_a_real_file_name():
-    # CCPD name field 0_0_24_21_30_29_28 belongs to plate 皖A0X654
     assert encode_plate("皖A0X654") == (0, 0, 24, 21, 30, 29, 28)
 
 

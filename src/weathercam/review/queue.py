@@ -1,14 +1,7 @@
-"""Selection of images for human review (pure functions, deterministic for a seed)."""
-
 import random
 
 
 def select_veri(vehicle_ids, camera_ids, split, part, n, seed):
-    """Indices of about n images from `part`, one per vehicle, spread over cameras.
-
-    Cameras are taken round-robin in sorted order; a camera with too few
-    vehicles lets the others fill up. The result is a sorted list of indices.
-    """
     if n < 0:
         raise ValueError(f"n must be >= 0, got {n}")
     if not (len(vehicle_ids) == len(camera_ids) == len(split)):
@@ -37,12 +30,6 @@ def select_veri(vehicle_ids, camera_ids, split, part, n, seed):
 
 
 def select_ccpd(test_files_by_subset, fixed, per_subset, seed):
-    """Review list for CCPD: fixed groups first, then a random sample per subset.
-
-    fixed maps a reason to a list of files. A file in several groups appears
-    once, with its reasons in the order of `fixed`. The random files come after
-    the fixed ones, drawn per subset from files not in any fixed group.
-    """
     if per_subset < 0:
         raise ValueError(f"per_subset must be >= 0, got {per_subset}")
     known = {f for files in test_files_by_subset.values() for f in files}

@@ -15,7 +15,6 @@ from weathercam.plates.ocr import decode_batch
 from weathercam.review.queue import select_ccpd, select_veri
 from weathercam.review.verdicts import elements_for
 
-# The same 13 images as research/score_plates.py: labelled box not on the labelled plate.
 EXCLUDED = (
     "images/022474.jpg", "images/022192.jpg", "images/024070.jpg",
     "images/022458.jpg", "images/022983.jpg", "images/023008.jpg", "images/023262.jpg",
@@ -23,7 +22,6 @@ EXCLUDED = (
     "images/026860.jpg", "images/027137.jpg",
 )
 EXCLUDED_SHA256 = "2fdff74e937a4204759dba073a9829523c04c35fc2e3bdb067d6da7b57e0b474"
-# Checked against the v26 handoff; the other inputs are only recorded with their hash.
 EXPECTED = {
     "manifest": "80aafd729e0fdb9616fdd86a0262708af77c0363ad10bf789668c01b12601dab",
     "split": "fb3c5b296835c10dc1a0857db67263882bcba86b8fe59dbb2ec074b1b97fa435",
@@ -31,7 +29,7 @@ EXPECTED = {
     "veri_b32_qg": "f896af50c15246e203cb999328dc6f4d449ddacc299b237dadeca54fdfa81208",
     "brand_head": "7da1109102f0f9189bb7b308d993cb13f8b563ef101155f2c508b562e5f913cc",
 }
-VIEW_SCALE = 100.0  # the default of research/zeroshot_view.py
+VIEW_SCALE = 100.0
 TAG = "vitb16_laion2b"
 
 

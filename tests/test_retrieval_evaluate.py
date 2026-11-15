@@ -219,7 +219,6 @@ def test_group_score_is_frozen():
 
 
 def test_camera_aware_ignores_same_camera_lookalikes():
-    # rows: A cam1, A cam1 (lookalike), B cam1, A cam2
     vectors = np.array([(1, 0), (1, 0.01), (1, 0.2), (0, 1)], dtype=np.float64)
     vehicles = ["A", "A", "B", "A"]
     cameras = [1, 1, 1, 2]
@@ -245,4 +244,4 @@ def test_camera_aware_rejects_bad_input():
     with pytest.raises(ValueError):
         camera_aware_scores(index, vectors, ["A", "B"], [1])
     with pytest.raises(ValueError):
-        camera_aware_scores(index, vectors, ["A", "B"], [1, 1])  # every query skipped
+        camera_aware_scores(index, vectors, ["A", "B"], [1, 1])
