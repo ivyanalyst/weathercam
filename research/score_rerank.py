@@ -6,9 +6,9 @@ import numpy as np
 
 from weathercam.core.config import load_config
 from weathercam.core.memory import MemoryGuard
-from weathercam.data.split import group_split
 from weathercam.retrieval.evaluate import camera_aware_scores, overall_score, query_scores
 from weathercam.retrieval.index import BruteForceIndex
+from weathercam.retrieval.innersplit import veri_inner_split
 from weathercam.retrieval.metric_head import MetricHead, project
 from weathercam.retrieval.rerank import expand_queries
 
@@ -35,13 +35,7 @@ def parse_args():
 
 
 def validation_rows(data, seed):
-    train_rows = np.flatnonzero(data["split"] == "train")
-    train_vehicles = data["vehicle_ids"][train_rows]
-    classes = list(
-        zip(data["color_ids"][train_rows].tolist(), data["type_ids"][train_rows].tolist())
-    )
-    _, val_part = group_split(train_vehicles.tolist(), classes, (0.8, 0.2), seed)
-    rows = train_rows[np.asarray(val_part)]
+    _, rows = veri_inner_split(data, seed)
     vehicles = len(set(data["vehicle_ids"][rows].tolist()))
     if len(rows) != VAL_IMAGES or vehicles != VAL_VEHICLES:
         sys.exit("validation rows are " + str(len(rows)) + " images, " + str(vehicles) + " vehicles")
