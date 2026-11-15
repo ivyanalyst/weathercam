@@ -8,7 +8,7 @@ import numpy as np
 from weathercam.core.config import load_config
 from weathercam.core.memory import MemoryGuard
 from weathercam.core.roc_metrics import roc_auc
-from weathercam.data.split import group_split
+from weathercam.retrieval.innersplit import veri_inner_split
 from weathercam.retrieval.metric_head import MetricHead, project
 from weathercam.retrieval.ood import knn_distances
 
@@ -38,14 +38,7 @@ def parse_args():
 
 
 def veri_parts(data, seed):
-    train_rows = np.flatnonzero(data["split"] == "train")
-    vehicles = data["vehicle_ids"][train_rows]
-    classes = list(
-        zip(data["color_ids"][train_rows].tolist(), data["type_ids"][train_rows].tolist())
-    )
-    fit_part, val_part = group_split(vehicles.tolist(), classes, (0.8, 0.2), seed)
-    fit_rows = train_rows[np.asarray(fit_part)]
-    val_rows = train_rows[np.asarray(val_part)]
+    fit_rows, val_rows = veri_inner_split(data, seed)
     val_vehicles = len(set(data["vehicle_ids"][val_rows].tolist()))
     if len(fit_rows) != FIT_IMAGES or len(val_rows) != VAL_IMAGES or val_vehicles != VAL_VEHICLES:
         sys.exit(
