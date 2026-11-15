@@ -6,9 +6,9 @@ import numpy as np
 
 from weathercam.core.config import load_config
 from weathercam.core.memory import MemoryGuard
-from weathercam.data.split import group_split
 from weathercam.retrieval.evaluate import camera_aware_scores, overall_score, query_scores
 from weathercam.retrieval.index import BruteForceIndex
+from weathercam.retrieval.innersplit import veri_inner_split
 from weathercam.retrieval.metric_head import MetricHead, fit, project
 from weathercam.retrieval.mining import k_center_greedy
 
@@ -28,14 +28,7 @@ def parse_args():
 
 
 def parts(data, seed):
-    train_rows = np.flatnonzero(data["split"] == "train")
-    vehicles = data["vehicle_ids"][train_rows]
-    classes = list(
-        zip(data["color_ids"][train_rows].tolist(), data["type_ids"][train_rows].tolist())
-    )
-    fit_part, val_part = group_split(vehicles.tolist(), classes, (0.8, 0.2), seed)
-    fit_rows = train_rows[np.asarray(fit_part)]
-    val_rows = train_rows[np.asarray(val_part)]
+    fit_rows, val_rows = veri_inner_split(data, seed)
     val_vehicles = len(set(data["vehicle_ids"][val_rows].tolist()))
     if len(fit_rows) != FIT_IMAGES or len(val_rows) != VAL_IMAGES or val_vehicles != VAL_VEHICLES:
         sys.exit(
