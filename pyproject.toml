@@ -14,6 +14,10 @@ dependencies = [
     "pillow",
 ]
 
+[project.optional-dependencies]
+service = ["fastapi", "uvicorn"]
+test = ["httpx2"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
