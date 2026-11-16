@@ -49,6 +49,10 @@ class GalleryIndex:
     def projected(self):
         return self._projector is not None
 
+    @property
+    def names(self):
+        return self._names
+
     def __len__(self):
         return len(self._names)
 

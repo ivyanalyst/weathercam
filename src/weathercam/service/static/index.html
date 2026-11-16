@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WeatherCam</title>
+<link rel="icon" href="data:,">
+<style>
+:root { color-scheme: light; --bg: rgb(250,250,248); --fg: rgb(28,28,26); --mut: rgb(102,102,98); --card: rgb(255,255,255); --line: rgb(216,216,210); --acc: rgb(31,111,235); --bad: rgb(179,38,30); }
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; --bg: rgb(22,22,21); --fg: rgb(236,236,234); --mut: rgb(160,160,154); --card: rgb(32,32,32); --line: rgb(58,58,55); --acc: rgb(110,168,254); --bad: rgb(242,184,181); }
+}
+body { margin: 0; padding: 1rem; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 64rem; margin: 0 auto; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.1rem; margin: 0 0 .5rem; }
+p, .note { color: var(--mut); margin: .25rem 0 .75rem; }
+input, button, textarea { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: .3rem .5rem; }
+button { background: var(--acc); color: rgb(255,255,255); border-color: var(--acc); cursor: pointer; }
+.status { min-height: 1.3rem; color: var(--mut); }
+.status.bad { color: var(--bad); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .75rem; margin-top: .75rem; }
+.card { border: 1px solid var(--line); border-radius: 6px; padding: .5rem; overflow-wrap: anywhere; }
+.card canvas, .card img { max-width: 100%; height: auto; display: block; margin-bottom: .4rem; }
+.name { font-weight: 600; }
+.small { color: var(--mut); font-size: .9rem; }
+.row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+</style>
+</head>
+<body>
+<main>
+<h1>WeatherCam</h1>
+<p class="note" data-role="top">Loading…</p>
+
+<section data-feature="weather" hidden>
+  <h2>Weather</h2>
+  <div class="row"><input type="file" accept="image/*" multiple data-id="weather-files"><button data-id="weather-run">Classify</button></div>
+  <div class="status" data-id="weather-status"></div>
+  <div class="grid" data-id="weather-out"></div>
+</section>
+
+<section data-feature="attributes" hidden>
+  <h2>Vehicle attributes</h2>
+  <div class="row"><input type="file" accept="image/*" multiple data-id="attributes-files"><button data-id="attributes-run">Classify</button></div>
+  <div class="status" data-id="attributes-status"></div>
+  <div class="grid" data-id="attributes-out"></div>
+</section>
+
+<section data-feature="ood" hidden>
+  <h2>Out-of-distribution score</h2>
+  <p>Raw kNN scores only. No threshold is applied, so the page does not say whether an image is unusual.</p>
+  <div class="row"><input type="file" accept="image/*" multiple data-id="ood-files"><button data-id="ood-run">Score</button></div>
+  <div class="status" data-id="ood-status"></div>
+  <div class="grid" data-id="ood-out"></div>
+</section>
+
+<section data-feature="plates" hidden>
+  <h2>Number plates</h2>
+  <div class="row">
+    <input type="file" accept="image/*" multiple data-id="plates-files">
+    <label>Find plate <input type="text" data-id="plates-query" placeholder="optional"></label>
+    <label>max edits <input type="number" min="0" step="1" value="1" data-id="plates-edits" style="width:4rem"></label>
+    <button data-id="plates-run">Read plates</button>
+  </div>
+  <div class="status" data-id="plates-status"></div>
+  <div class="small" data-id="plates-summary"></div>
+  <div class="grid" data-id="plates-out"></div>
+</section>
+
+<section data-feature="search_text" hidden>
+  <h2>Text search</h2>
+  <p>Finds gallery images whose embedding is closest to your text. Search quality was never measured. The weather, attributes and plates shown for each hit come from separate models and may disagree with your text.</p>
+  <div class="row">
+    <input type="text" data-id="search-text" placeholder="cars in the snow storm" style="flex:1;min-width:14rem">
+    <label>k <input type="number" min="1" step="1" value="8" data-id="search-k" style="width:4rem"></label>
+    <button data-id="search-run">Search</button>
+  </div>
+  <div class="status" data-id="search-status"></div>
+  <div class="grid" data-id="search-out"></div>
+</section>
+</main>
+
+<script>
+"use strict";
+const MB = 1024 * 1024;
+let health = null;
+
+function q(id) { return document.querySelector('[data-id="' + id + '"]'); }
+function el(tag, text, cls) {
+  const e = document.createElement(tag);
+  if (text !== undefined) e.textContent = text;
+  if (cls) e.className = cls;
+  return e;
+}
+function fail(status, message) { status.className = "status bad"; status.textContent = message; }
+function explain(code, detail) {
+  const text = typeof detail === "string" ? detail : JSON.stringify(detail);
+  if (code === 0) return "Cannot reach the service.";
+  if (code === 422) return "Request rejected: " + text;
+  if (code === 413) return "Too large: " + text;
+  if (code === 503) return "This feature is not available on this server.";
+  if (code === 502) return "The worker failed or could not decode an image (" + text + "). If every request fails, restart the service.";
+  return "Error " + code + ": " + text;
+}
+async function api(path, body) {
+  let res;
+  try {
+    res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  } catch (e) {
+    return { error: explain(0, "") };
+  }
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = null; }
+  if (!res.ok) return { error: explain(res.status, data && data.detail !== undefined ? data.detail : res.statusText) };
+  return { data: data };
+}
+function toBase64(blob) {
+  return new Promise(function (ok, bad) {
+    const reader = new FileReader();
+    reader.onload = function () { ok(String(reader.result).split(",")[1]); };
+    reader.onerror = function () { bad(reader.error); };
+    reader.readAsDataURL(blob);
+  });
+}
+function checkFiles(files) {
+  if (!files.length) return "Choose at least one image.";
+  if (files.length > health.max_images) return "At most " + health.max_images + " images per request.";
+  for (const f of files) {
+    if (f.size > health.max_image_bytes) return f.name + " is larger than " + (health.max_image_bytes / MB).toFixed(0) + " MB.";
+  }
+  return "";
+}
+function totalWarning(files) {
+  const total = files.reduce(function (a, f) { return a + f.size; }, 0);
+  return total > 50 * MB ? " Large upload (" + (total / MB).toFixed(0) + " MB): this may be slow and use a lot of memory." : "";
+}
+function pct(p) { return p.label + " " + (p.probability * 100).toFixed(1) + "%"; }
+function topList(p) { return p.top.map(pct).join(", "); }
+
+function drawImage(canvas, src, plate, note) {
+  const img = new Image();
+  img.onload = function () {
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const g = canvas.getContext("2d");
+    g.drawImage(img, 0, 0);
+    if (!plate || !plate.box) return;
+    if (plate.width !== img.naturalWidth || plate.height !== img.naturalHeight) {
+      note.textContent = "Box not drawn: the server saw a different image size (possibly EXIF rotation).";
+      return;
+    }
+    const b = plate.box;
+    g.lineWidth = Math.max(2, img.naturalWidth / 200);
+    g.strokeStyle = "rgb(255,45,45)";
+    g.strokeRect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
+  };
+  img.onerror = function () { note.textContent = "Image could not be shown."; };
+  img.src = src;
+}
+function plateText(plate, matches) {
+  if (!plate.box) return "No plate detected.";
+  let s = "Plate score " + plate.score.toFixed(2) + ". ";
+  if (!plate.reading) return s + "Box found, no reading.";
+  const low = Math.min.apply(null, plate.reading.positions);
+  s += "Reading " + plate.reading.text + " (confidence " + plate.reading.confidence.toFixed(2) + ", weakest position " + low.toFixed(2) + ").";
+  const hit = matches && matches.find(function (m) { return m.index === plate.index; });
+  if (hit) s += " Matches the query, edit distance " + hit.distance + ".";
+  return s;
+}
+
+function wire(name, endpoint, extraBody, fill, summary) {
+  q(name + "-run").addEventListener("click", async function () {
+    const out = q(name + "-out");
+    const status = q(name + "-status");
+    out.replaceChildren();
+    status.className = "status";
+    status.textContent = "";
+    const files = Array.prototype.slice.call(q(name + "-files").files);
+    const problem = checkFiles(files);
+    if (problem) { fail(status, problem); return; }
+    let extra;
+    try { extra = extraBody(); } catch (e) { fail(status, e.message); return; }
+    status.textContent = "Working…" + totalWarning(files);
+    let images;
+    try { images = await Promise.all(files.map(toBase64)); } catch (e) { fail(status, "Could not read a file."); return; }
+    const res = await api(endpoint, Object.assign({ images: images }, extra));
+    if (res.error) { fail(status, res.error); return; }
+    status.textContent = totalWarning(files).trim();
+    if (summary) summary(res.data);
+    files.forEach(function (file, i) {
+      const card = el("div", undefined, "card");
+      card.append(el("div", file.name, "name"));
+      fill(card, res.data, i, URL.createObjectURL(file));
+      out.append(card);
+    });
+  });
+}
+function thumb(card, url) {
+  const img = el("img");
+  img.alt = "";
+  img.src = url;
+  card.append(img);
+}
+
+wire("weather", "/weather", function () { return {}; }, function (card, data, i, url) {
+  thumb(card, url);
+  const p = data.results[i];
+  card.append(el("div", pct(p)));
+  card.append(el("div", "Top: " + topList(p), "small"));
+});
+wire("attributes", "/attributes", function () { return {}; }, function (card, data, i, url) {
+  thumb(card, url);
+  const row = data.results[i];
+  Object.keys(row).forEach(function (key) {
+    card.append(el("div", key + ": " + pct(row[key])));
+    card.append(el("div", "Top: " + topList(row[key]), "small"));
+  });
+});
+wire("ood", "/ood", function () { return {}; }, function (card, data, i, url) {
+  thumb(card, url);
+  card.append(el("div", "kNN score (k=" + data.k + "): " + data.scores[i].toFixed(4)));
+  card.append(el("div", "Raw score, no threshold.", "small"));
+});
+wire("plates", "/plates", function () {
+  const query = q("plates-query").value.trim();
+  if (!query) return {};
+  const edits = Number(q("plates-edits").value);
+  if (!Number.isInteger(edits) || edits < 0) throw new Error("max edits must be a whole number, 0 or more.");
+  return { query: query, max_edits: edits };
+}, function (card, data, i, url) {
+  const canvas = el("canvas");
+  const note = el("div", "", "small");
+  card.append(canvas);
+  const plate = data.results[i];
+  card.append(el("div", plateText(plate, data.matches)));
+  card.append(note);
+  drawImage(canvas, url, plate, note);
+}, function (data) {
+  const box = q("plates-summary");
+  if (data.matches === null) { box.textContent = ""; return; }
+  box.textContent = data.matches.length
+    ? "Matches: " + data.matches.map(function (m) { return "image " + (m.index + 1) + " (distance " + m.distance + ")"; }).join(", ")
+    : "No image matched the query.";
+});
+
+async function runSearch() {
+  const status = q("search-status");
+  const out = q("search-out");
+  out.replaceChildren();
+  status.className = "status";
+  const text = q("search-text").value.trim();
+  if (!text) { fail(status, "Type a description."); return; }
+  const cap = Math.min(16, health.max_images, health.gallery_size);
+  const k = Number(q("search-k").value);
+  if (!Number.isInteger(k) || k < 1 || k > cap) { fail(status, "k must be a whole number from 1 to " + cap + "."); return; }
+  status.textContent = "Searching…";
+  const found = await api("/search/text", { texts: [text], k: k });
+  if (found.error) { fail(status, found.error); return; }
+  const hits = found.data.results[0];
+  const cards = hits.map(function (hit) {
+    const card = el("div", undefined, "card");
+    card.append(el("div", hit.name, "name"));
+    card.append(el("div", "similarity " + hit.score.toFixed(4), "small"));
+    out.append(card);
+    return card;
+  });
+  if (!health.gallery_images) {
+    status.textContent = "Names and scores only. Start the service with --image-zip to see thumbnails and analysis.";
+    return;
+  }
+  status.textContent = "Loading images…";
+  const loaded = [];
+  await Promise.all(hits.map(async function (hit, i) {
+    const canvas = el("canvas");
+    const note = el("div", "", "small");
+    cards[i].insertBefore(canvas, cards[i].children[2] || null);
+    try {
+      const res = await fetch("/gallery/image/" + encodeURIComponent(hit.name));
+      if (!res.ok) throw new Error("status " + res.status);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      drawImage(canvas, url, null, note);
+      loaded.push({ i: i, blob: blob, url: url, canvas: canvas, note: note });
+    } catch (e) {
+      note.textContent = "Image not available.";
+    }
+    cards[i].append(note);
+  }));
+  loaded.sort(function (a, b) { return a.i - b.i; });
+  if (!loaded.length) { status.textContent = ""; return; }
+  status.textContent = "Analysing…";
+  let images;
+  try { images = await Promise.all(loaded.map(function (item) { return toBase64(item.blob); })); } catch (e) { fail(status, "Could not read an image."); return; }
+  const slots = loaded.map(function (item) {
+    const holder = el("div", undefined, "small");
+    cards[item.i].append(holder);
+    return holder;
+  });
+  const jobs = [];
+  function job(feature, endpoint, apply) {
+    if (!health.features[feature]) return;
+    jobs.push(api(endpoint, { images: images }).then(function (res) {
+      loaded.forEach(function (item, j) {
+        const line = el("div");
+        if (res.error) { line.textContent = feature + ": " + res.error; line.className = "status bad"; }
+        else apply(line, res.data, j, item);
+        slots[j].append(line);
+      });
+    }));
+  }
+  job("weather", "/weather", function (line, data, j) { line.textContent = "Weather: " + pct(data.results[j]); });
+  job("attributes", "/attributes", function (line, data, j) {
+    const row = data.results[j];
+    line.textContent = Object.keys(row).map(function (key) { return key + ": " + pct(row[key]); }).join(" | ");
+  });
+  job("plates", "/plates", function (line, data, j, item) {
+    const plate = data.results[j];
+    line.textContent = plateText(plate, null);
+    drawImage(item.canvas, item.url, plate, item.note);
+  });
+  await Promise.all(jobs);
+  status.textContent = "";
+}
+q("search-run").addEventListener("click", runSearch);
+
+async function start() {
+  const top = document.querySelector('[data-role="top"]');
+  try {
+    const res = await fetch("/health");
+    if (!res.ok) throw new Error("status " + res.status);
+    health = await res.json();
+  } catch (e) {
+    top.textContent = "Cannot read /health. Is the service running?";
+    return;
+  }
+  const on = Object.keys(health.features).filter(function (key) { return health.features[key]; });
+  top.textContent = on.length
+    ? "Available: " + on.join(", ") + ". Up to " + health.max_images + " images per request, " + (health.max_image_bytes / MB).toFixed(0) + " MB each."
+    : "The service has no features enabled.";
+  document.querySelectorAll("[data-feature]").forEach(function (section) {
+    section.hidden = !health.features[section.getAttribute("data-feature")];
+  });
+}
+start();
+</script>
+</body>
+</html>

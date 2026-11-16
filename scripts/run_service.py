@@ -37,6 +37,7 @@ def parse_args():
     p.add_argument("--embed-worker-python")
     p.add_argument("--plate-worker-python")
     p.add_argument("--gallery")
+    p.add_argument("--image-zip")
     p.add_argument("--no-ood", action="store_true")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8000)
@@ -111,16 +112,34 @@ def start_plates(args, clients):
     return client
 
 
+def open_images(path, gallery):
+    import zipfile
+
+    from weathercam.data.veri import ZIP_ROOT, VeriReader
+
+    try:
+        with zipfile.ZipFile(path) as archive:
+            members = set(archive.namelist())
+    except (OSError, zipfile.BadZipFile) as error:
+        sys.exit(f"cannot read {path}: {error}")
+    missing = [name for name in gallery.names if f"{ZIP_ROOT}/image_test/{name}" not in members]
+    if missing:
+        sys.exit(f"{len(missing)} gallery images are not in {path} image_test, first: {missing[0]}")
+    return VeriReader(path)
+
+
 def main():
     args = parse_args()
     if not args.embed_worker_python and not args.plate_worker_python:
         sys.exit("give --embed-worker-python, --plate-worker-python or both")
     if args.gallery and not args.embed_worker_python:
         sys.exit("--gallery needs --embed-worker-python")
+    if args.image_zip and not args.gallery:
+        sys.exit("--image-zip needs --gallery")
     signal.signal(signal.SIGTERM, signal.default_int_handler)
     guard = MemoryGuard(args.memory_limit_mb)
     clients = []
-    encoder = reader = weather = attributes = ood = gallery = None
+    encoder = reader = weather = attributes = ood = gallery = image_reader = None
     try:
         if args.embed_worker_python:
             encoder = start_embed(args, clients)
@@ -128,12 +147,16 @@ def main():
             ood = build_ood(args)
             if args.gallery:
                 gallery = load_gallery(args.gallery)
+                if args.image_zip:
+                    image_reader = open_images(args.image_zip, gallery)
         if args.plate_worker_python:
             reader = start_plates(args, clients)
         print(f"main process RSS {guard.check():.0f} MB", flush=True)
-        app = create_app(encoder=encoder, weather_head=weather, attribute_heads=attributes, ood=ood, gallery=gallery, plate_reader=reader)
+        app = create_app(encoder=encoder, weather_head=weather, attribute_heads=attributes, ood=ood, gallery=gallery, plate_reader=reader, image_reader=image_reader)
         uvicorn.run(app, host=args.host, port=args.port)
     finally:
+        if image_reader is not None:
+            image_reader.close()
         for client in clients:
             client.close()
 

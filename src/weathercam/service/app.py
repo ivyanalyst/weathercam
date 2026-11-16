@@ -1,9 +1,11 @@
 import base64
+import threading
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
 
 from weathercam.service import handlers
@@ -11,6 +13,8 @@ from weathercam.service.worker_client import WorkerError
 
 DEFAULT_MAX_IMAGES = 16
 DEFAULT_MAX_IMAGE_BYTES = 8 * 1024 * 1024
+PAGE_PATH = Path(__file__).parent / "static" / "index.html"
+PAGE_POLICY = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'"
 
 
 @dataclass(frozen=True)
@@ -97,11 +101,14 @@ def create_app(
     ood=None,
     gallery=None,
     plate_reader=None,
+    image_reader=None,
     max_images=DEFAULT_MAX_IMAGES,
     max_image_bytes=DEFAULT_MAX_IMAGE_BYTES,
 ):
     if gallery is not None and gallery.projected:
         raise ValueError("the text gallery must not be projected")
+    if image_reader is not None and gallery is None:
+        raise ValueError("image_reader needs a gallery")
     features = {
         "weather": encoder is not None and weather_head is not None,
         "attributes": encoder is not None and bool(attribute_heads),
@@ -110,6 +117,9 @@ def create_app(
         "search_text": encoder is not None and gallery is not None,
     }
     app = FastAPI(title="weathercam")
+    page = PAGE_PATH.read_text(encoding="utf-8")
+    image_names = frozenset(gallery.names) if image_reader is not None else frozenset()
+    image_lock = threading.Lock()
 
     @app.exception_handler(WorkerError)
     async def worker_failed(request, error):
@@ -120,6 +130,7 @@ def create_app(
         return {
             "features": features,
             "gallery_size": None if gallery is None else len(gallery),
+            "gallery_images": image_reader is not None,
             "max_images": max_images,
             "max_image_bytes": max_image_bytes,
         }
@@ -180,5 +191,20 @@ def create_app(
             raise HTTPException(status_code=422, detail=f"k must be in [1, {len(gallery)}]")
         found = handlers.search_text(encoder, gallery, body.texts, body.k)
         return {"results": [[{"name": name, "score": score} for name, score in row] for row in found]}
+
+    @app.get("/", include_in_schema=False)
+    def index():
+        return HTMLResponse(page, headers={"Content-Security-Policy": PAGE_POLICY})
+
+    @app.get("/gallery/image/{name}", include_in_schema=False)
+    def gallery_image(name: str):
+        if name not in image_names:
+            raise HTTPException(status_code=404, detail="no such image")
+        try:
+            with image_lock:
+                data = image_reader.read_image("test", name)
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="image file missing")
+        return Response(data, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=3600"})
 
     return app

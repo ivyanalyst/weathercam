@@ -1,5 +1,6 @@
 import base64
 import math
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -13,6 +14,7 @@ from weathercam.service.app import OodBank, create_app
 from weathercam.service.handlers import GalleryIndex
 from weathercam.service.heads import LinearHead, MetricProjector
 from weathercam.service.plate_client import PlateResult
+import weathercam.service.app as app_module
 from weathercam.service.worker_client import WorkerError
 
 IMAGE_A = b"image-one"
@@ -115,6 +117,18 @@ def build(**overrides):
     return TestClient(app), encoder, reader
 
 
+class FakeImages:
+    def __init__(self, files):
+        self.files = files
+        self.calls = []
+
+    def read_image(self, split, name):
+        self.calls.append((split, name))
+        if name not in self.files:
+            raise FileNotFoundError(name)
+        return self.files[name]
+
+
 def test_health_reports_features_and_caps():
     client, _, _ = build()
     body = client.get("/health").json()
@@ -122,6 +136,7 @@ def test_health_reports_features_and_caps():
     assert body["gallery_size"] == 3
     assert body["max_images"] == 16
     assert body["max_image_bytes"] == 8388608
+    assert body["gallery_images"] is False
     bare = TestClient(create_app()).get("/health").json()
     assert bare["features"] == {key: False for key in body["features"]}
     assert bare["gallery_size"] is None
@@ -299,3 +314,44 @@ def test_create_app_refuses_a_projected_gallery():
     projected = GalleryIndex(["a", "b"], np.array([[1.0, 0.0], [0.0, 1.0]]), projector=projector)
     with pytest.raises(ValueError):
         create_app(encoder=FakeEncoder(), gallery=projected)
+
+
+def test_page_is_served_with_policy_and_hidden_from_docs():
+    client, _, _ = build()
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "default-src 'none'" in response.headers["content-security-policy"]
+    assert "/" not in client.get("/openapi.json").json()["paths"]
+
+
+def test_page_matches_its_file_and_has_no_external_hosts():
+    client, _, _ = build()
+    text = client.get("/").text
+    path = Path(app_module.__file__).parent / "static" / "index.html"
+    assert text == path.read_text(encoding="utf-8")
+    assert "http://" not in text and "https://" not in text
+
+
+def test_gallery_image_serves_listed_names_only():
+    images = FakeImages({"a": b"jpeg-a", "b": b"jpeg-b"})
+    client, _, _ = build(image_reader=images)
+    assert client.get("/health").json()["gallery_images"] is True
+    response = client.get("/gallery/image/a")
+    assert response.status_code == 200
+    assert response.content == b"jpeg-a"
+    assert response.headers["content-type"] == "image/jpeg"
+    assert client.get("/gallery/image/zzz").status_code == 404
+    assert client.get("/gallery/image/c").status_code == 404
+    assert client.get("/gallery/image/..%2Fa").status_code == 404
+    assert images.calls == [("test", "a"), ("test", "c")]
+
+
+def test_gallery_image_is_not_served_without_a_reader():
+    client, _, _ = build()
+    assert client.get("/gallery/image/a").status_code == 404
+
+
+def test_image_reader_needs_a_gallery():
+    with pytest.raises(ValueError):
+        create_app(image_reader=FakeImages({}))
