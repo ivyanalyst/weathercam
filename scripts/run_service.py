@@ -1,4 +1,5 @@
 import argparse
+import signal
 import sys
 from pathlib import Path
 
@@ -130,6 +131,7 @@ def main():
             reader = start_plates(args, clients)
         print(f"main process RSS {guard.check():.0f} MB", flush=True)
         app = create_app(encoder=encoder, weather_head=weather, attribute_heads=attributes, ood=ood, gallery=gallery, plate_reader=reader)
+        signal.signal(signal.SIGTERM, signal.default_int_handler)
         uvicorn.run(app, host=args.host, port=args.port)
     finally:
         for client in clients:
