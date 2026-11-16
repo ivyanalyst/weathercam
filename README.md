@@ -45,7 +45,7 @@ Limits that go with the table:
 
 - Metrics (IoU, NMS, AP/mAP, CER, classification, retrieval, ROC AUC), splits, augmentation, corruptions, the kNN index, OOD scoring, k-center, near-duplicate grouping and the service are own code. Libraries are used only for weights, CLIP and tests.
 - src/weathercam never imports torch or ultralytics. Code that needs them lives in research/ and runs in separate environments (Kaggle or local virtual environments). Heads and all scoring run with NumPy.
-- The service layer (src/weathercam/service) has handlers free of torch and web frameworks. Embedding and plate reading run as two subprocess workers over JSON lines, with hash-checked weights and a memory check. A web app is not built.
+- The service layer (src/weathercam/service) has handlers free of torch and web frameworks. Embedding and plate reading run as two subprocess workers over JSON lines, with hash-checked weights and a memory check.
 - scripts/check_service.py reproduces stored validation numbers and checks that the workers agree with stored outputs on a small sample (16 images each). The plate sample was not stratified by province or subset, and uploads of other formats or with EXIF rotation were not tested.
 
 ## Layout and tests
@@ -68,3 +68,19 @@ The main environment needs only numpy, pyyaml, psutil and pillow:
 No datasets, dataset images, plate texts or trained weights are part of this repository. The datasets (VeRi, DAWN, CCPD2019, VMMRdb) must be obtained from their owners under their own terms; the terms as known are in THIRD_PARTY.md. Paths are set in configs/default.yaml and a git-ignored configs/local.yaml.
 
 The code is released under AGPL-3.0-or-later (see LICENSE); the detector dependency Ultralytics is AGPL-3.0. Third-party components and weights are listed in THIRD_PARTY.md, and references are in CITATION.cff.
+
+## Web page
+
+The service serves a single HTML page at GET / (no external scripts, fonts or requests). It shows a panel for each feature that /health reports as enabled: weather, vehicle attributes, out-of-distribution scores (raw, no threshold), number plates (with an optional plate query) and text search. For text search each hit shows a thumbnail and then the weather, attributes and plate reading computed on that image. Thumbnails need `--image-zip` pointing to a VeRi zip that holds every gallery name.
+
+Launch (all features):
+
+    python3 scripts/run_service.py --embed-worker-python /path/to/venvs/clip/bin/python --plate-worker-python /path/to/venvs/yolo/bin/python --gallery /tmp/gallery_2000.npz --image-zip /path/to/VeRi.zip --port 8014
+
+Known limits, seen in a browser check on small samples:
+- The weather head labelled a clear photo of a US sedan as fog (86%). It was never validated on such photos.
+- The type head called the rear of a Ford sedan a bus (61%) on a close-up CCPD image.
+- Plate readings on small VeRi crops have low scores and confidences (0.05 to 0.13 in the samples seen) and should not be trusted.
+- Text-search quality was never measured.
+- If a worker process dies, the service keeps running and /health still lists its feature. Requests to it return 502 until the service is restarted.
+- Large uploads, EXIF rotation, other image formats and concurrent use were not tested.
