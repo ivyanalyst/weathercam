@@ -75,7 +75,7 @@ class WorkerClient:
         try:
             ready = self._parse(self._next_line(float(startup_timeout_seconds)))
             self._check_ready(ready)
-        except WorkerError:
+        except BaseException:
             self._shutdown()
             raise
         self._model = str(ready.get("model", ""))

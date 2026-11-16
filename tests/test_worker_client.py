@@ -1,9 +1,11 @@
+import subprocess
 import sys
 import time
 
 import numpy as np
 import pytest
 
+from weathercam.service import worker_client
 from weathercam.service.worker_client import Encoder, WorkerClient, WorkerError
 
 FAKE_WORKER = '''
@@ -133,6 +135,32 @@ def test_reply_timeout_raises(script):
 def test_startup_timeout_raises(script):
     with pytest.raises(WorkerError):
         make(script, "nostart", startup=0.5)
+
+
+def test_interrupt_during_startup_stops_the_worker(script, monkeypatch):
+    started = []
+    real_popen = subprocess.Popen
+
+    def spy(*args, **kwargs):
+        process = real_popen(*args, **kwargs)
+        started.append(process)
+        return process
+
+    def interrupted(self, timeout):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(worker_client.subprocess, "Popen", spy)
+    monkeypatch.setattr(WorkerClient, "_next_line", interrupted)
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            make(script, "nostart")
+        assert len(started) == 1
+        assert started[0].poll() is not None
+    finally:
+        for process in started:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
 
 
 def test_bad_shape_raises(script):
