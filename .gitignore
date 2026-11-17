@@ -28,3 +28,4 @@ dist/
 /Objectives.odt
 /configs/local.yaml
 *.tar.gz
+eval/smoke/
