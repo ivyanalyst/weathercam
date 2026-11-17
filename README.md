@@ -84,3 +84,63 @@ Known limits, seen in a browser check on small samples:
 - Text-search quality was never measured.
 - If a worker process dies, the service keeps running and /health still lists its feature. Requests to it return 502 until the service is restarted.
 - Large uploads, EXIF rotation, other image formats and concurrent use were not tested.
+cd /path/to/weathercam
+cat >> README.md <<'EOF'
+
+## Run it yourself (Docker, CPU only)
+
+### Build
+
+    docker build -t weathercam:test .
+
+Needs internet (installs packages from PyPI). The image is about 4 GB.
+
+### What you need besides the image
+
+- `outputs/` folder: the model files and results the service reads.
+  Not stored in git; it is shared separately and mounted read-only.
+- `gallery_2000.npz`: the text-search index. Also shared separately.
+- Optional: the VeRi dataset zip, only for thumbnails in text search.
+  Everything else works without it.
+
+### Start
+
+    chmod +x run.sh
+    OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery_2000.npz ./run.sh
+    # with thumbnails:
+    OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery_2000.npz VERI_ZIP=/path/to/VeRi.zip ./run.sh
+
+Open http://127.0.0.1:8014
+
+### First run vs later runs
+
+- The first run needs internet: it downloads the embedding model
+  (about 600 MB, 572 MB measured) into `~/.cache/weathercam-hf`
+  (change with `HF_DIR=...`).
+- Later runs work offline (`run.sh` detects the filled cache).
+- If the first download was interrupted and the next start fails,
+  delete `~/.cache/weathercam-hf` and run again.
+
+### Known behaviour
+
+- Harmless: the Hugging Face "unauthenticated requests" warning and a
+  `favicon.ico` 404. No token is needed.
+- A worker that dies is not reported: `/health` still lists the feature
+  and requests return 502 until you restart the container.
+- Plate search: include the province character (e.g. 皖AZ5761) or allow
+  at least 1 edit.
+- JPEG/PNG only; HEIC is not supported.
+- Tests run on the host (`pytest`), not inside the image. The image is
+  smoke-tested: startup, `/health`, and all five panels.
+- Model quality is limited: the weather, type and brand heads make
+  visible mistakes.
+EOF
+
+echo '*.tar.gz' >> .gitignore
+chmod +x run.sh
+git add run.sh README.md .gitignore
+git status --short
+git ls-files -s run.sh
+git commit -m "Phase 14: run.sh and README run section"
+git log --oneline -1
+git status --short

@@ -27,3 +27,4 @@ dist/
 /Plan&Structure.odt
 /Objectives.odt
 /configs/local.yaml
+*.tar.gz
