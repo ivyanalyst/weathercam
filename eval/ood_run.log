@@ -1,0 +1,42 @@
+nohup: ignoring input
+veri_id_same         n= 500 median=0.8873  [384s]
+veri_id_val          n= 500 median=0.8750  [795s]
+ccpd_base            n= 500 median=1.1733  [1214s]
+ccpd_weather         n= 500 median=1.1796  [1653s]
+ccpd_blur            n= 500 median=1.1680  [2038s]
+ccpd_challenge       n= 500 median=1.1643  [2448s]
+vmmr                 n= 500 median=1.1154  [2816s]
+veri_noise_s1        n= 200 median=0.9770  [2969s]
+veri_noise_s2        n= 200 median=0.9944  [3121s]
+veri_blur_s1         n= 200 median=1.0254  [3263s]
+veri_blur_s2         n= 200 median=0.9931  [3408s]
+veri_jpeg_s1         n= 200 median=1.0050  [3565s]
+veri_jpeg_s2         n= 200 median=1.0475  [3713s]
+veri_dark_s1         n= 200 median=0.9609  [3863s]
+veri_dark_s2         n= 200 median=1.0475  [4012s]
+veri_fog_s1          n= 200 median=0.9150  [4162s]
+veri_fog_s2          n= 200 median=0.9745  [4342s]
+veri_recode_s1       n= 200 median=0.8898  [4491s]
+
+set              vs                      n_id n_ood  AUROC          95% CI   AUPR chance OODacc IDflag
+ccpd_base        veri_id_val              500   500  0.999 [0.998,1.000]  0.999  0.500  0.002  0.006
+ccpd_base        veri_id_same             500   500  0.999 [0.998,1.000]  0.999  0.500  0.002  0.002
+ccpd_weather     veri_id_val              500   500  1.000 [0.999,1.000]  1.000  0.500  0.002  0.000
+ccpd_weather     veri_id_same             500   500  1.000 [0.999,1.000]  1.000  0.500  0.002  0.000
+ccpd_blur        veri_id_val              500   500  1.000 [0.999,1.000]  1.000  0.500  0.000  0.000
+ccpd_blur        veri_id_same             500   500  1.000 [1.000,1.000]  1.000  0.500  0.000  0.002
+ccpd_challenge   veri_id_val              500   500  0.998 [0.996,0.999]  0.998  0.500  0.016  0.004
+ccpd_challenge   veri_id_same             500   500  0.998 [0.996,0.999]  0.998  0.500  0.016  0.002
+vmmr             veri_id_val              500   500  0.996 [0.994,0.998]  0.996  0.500  0.014  0.016
+vmmr             veri_id_same             500   500  0.996 [0.994,0.998]  0.997  0.500  0.014  0.008
+veri_noise_s1    veri_id_same_minus_base   300   200  0.758 [0.709,0.801]  0.719  0.400  0.630  0.893
+veri_noise_s2    veri_id_same_minus_base   300   200  0.844 [0.807,0.878]  0.804  0.400  0.545  0.573
+veri_blur_s1     veri_id_same_minus_base   300   200  0.826 [0.785,0.867]  0.835  0.400  0.395  0.867
+veri_blur_s2     veri_id_same_minus_base   300   200  0.833 [0.797,0.868]  0.779  0.400  0.565  0.540
+veri_jpeg_s1     veri_id_same_minus_base   300   200  0.805 [0.763,0.844]  0.796  0.400  0.495  0.883
+veri_jpeg_s2     veri_id_same_minus_base   300   200  0.949 [0.928,0.967]  0.937  0.400  0.210  0.217
+veri_dark_s1     veri_id_same_minus_base   300   200  0.679 [0.628,0.729]  0.627  0.400  0.770  0.927
+veri_dark_s2     veri_id_same_minus_base   300   200  0.866 [0.827,0.898]  0.868  0.400  0.335  0.753
+veri_fog_s1      veri_id_same_minus_base   300   200  0.589 [0.535,0.643]  0.503  0.400  0.860  0.937
+veri_fog_s2      veri_id_same_minus_base   300   200  0.738 [0.694,0.783]  0.707  0.400  0.650  0.870
+veri_recode_s1   veri_id_same_minus_base   300   200  0.511 [0.461,0.562]  0.409  0.400  0.960  0.960

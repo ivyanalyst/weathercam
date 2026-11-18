@@ -1,0 +1,64 @@
+
+=== gray: top 10 (name score colour type)
+  0042_c006_00086215_0.jpg 0.206 blue sedan
+  0546_c017_00015800_0.jpg 0.206 gray sedan
+  0456_c015_00009000_0.jpg 0.202 gray sedan
+  0546_c017_00015785_0.jpg 0.202 gray sedan
+  0489_c007_00085730_0.jpg 0.200 gray sedan
+  0518_c017_00046035_0.jpg 0.200 gray sedan
+  0417_c004_00088670_0.jpg 0.199 gray SUV
+  0318_c003_00006125_0.jpg 0.197 white sedan
+  0566_c012_00036900_1.jpg 0.197 gray sedan
+  0566_c016_00039575_0.jpg 0.197 gray sedan
+  mean rank by true colour (1 = best):
+    gray 407 (n=308), golden 716 (n=32), brown 980 (n=25), white 998 (n=434), black 998 (n=681), green 1024 (n=127), blue 1327 (n=55), yellow 1474 (n=126), orange 1504 (n=21), red 1546 (n=191)
+  mean rank by true type (1 = best):
+    van 506 (n=47), sedan 834 (n=887), pickup 879 (n=122), truck 1108 (n=301), SUV 1183 (n=434), hatchback 1242 (n=139), estate 1458 (n=17), bus 1619 (n=53)
+
+=== green: top 10 (name score colour type)
+  0065_c002_00062995_0.jpg 0.207 green bus
+  0065_c006_00061350_0.jpg 0.207 green bus
+  0065_c017_00065815_0.jpg 0.205 green bus
+  0065_c004_00060120_0.jpg 0.205 green bus
+  0065_c019_00066030_0.jpg 0.203 green bus
+  0066_c013_00059205_0.jpg 0.202 green bus
+  0065_c002_00063040_0.jpg 0.202 green bus
+  0065_c008_00059935_0.jpg 0.200 green bus
+  0065_c002_00063085_0.jpg 0.197 green bus
+  0065_c001_00064640_0.jpg 0.197 green bus
+  mean rank by true colour (1 = best):
+    gray 848 (n=308), blue 950 (n=55), black 953 (n=681), green 959 (n=127), white 1000 (n=434), golden 1010 (n=32), orange 1196 (n=21), yellow 1197 (n=126), brown 1233 (n=25), red 1276 (n=191)
+  mean rank by true type (1 = best):
+    van 585 (n=47), bus 599 (n=53), sedan 986 (n=887), hatchback 988 (n=139), SUV 1021 (n=434), truck 1063 (n=301), pickup 1175 (n=122), estate 1400 (n=17)
+
+=== hatchback: top 10 (name score colour type)
+  0240_c001_00045365_0.jpg 0.278 golden SUV
+  0005_c002_00075730_0.jpg 0.276 orange hatchback
+  0005_c004_00077635_0.jpg 0.270 orange hatchback
+  0711_c003_00001030_0.jpg 0.269 black sedan
+  0306_c003_00080745_0.jpg 0.268 white hatchback
+  0005_c004_00077620_0.jpg 0.268 orange hatchback
+  0295_c015_00036610_0.jpg 0.268 white hatchback
+  0005_c007_00078470_0.jpg 0.268 orange hatchback
+  0218_c003_00043590_0.jpg 0.267 red hatchback
+  0570_c009_00069975_0.jpg 0.267 gray sedan
+  mean rank by true colour (1 = best):
+    orange 408 (n=21), red 669 (n=191), golden 718 (n=32), brown 887 (n=25), gray 902 (n=308), black 933 (n=681), white 1004 (n=434), green 1419 (n=127), blue 1454 (n=55), yellow 1673 (n=126)
+  mean rank by true type (1 = best):
+    hatchback 333 (n=139), estate 791 (n=17), SUV 828 (n=434), sedan 831 (n=887), van 1012 (n=47), pickup 1376 (n=122), truck 1770 (n=301), bus 1834 (n=53)
+
+=== white truck: top 10 (name score colour type)
+  0298_c016_00044950_0.jpg 0.296 white van
+  0135_c011_00069390_0.jpg 0.292 white truck
+  0135_c012_00060290_0.jpg 0.291 white truck
+  0126_c007_00061835_0.jpg 0.291 white truck
+  0135_c005_00070870_0.jpg 0.290 white truck
+  0129_c017_00027540_1.jpg 0.289 white truck
+  0134_c002_00063515_0.jpg 0.288 white truck
+  0135_c004_00070095_1.jpg 0.288 white truck
+  0174_c008_00072150_0.jpg 0.288 gray truck
+  0135_c011_00069405_0.jpg 0.285 white truck
+  mean rank by true colour (1 = best):
+    white 456 (n=434), yellow 555 (n=126), green 625 (n=127), gray 705 (n=308), golden 1120 (n=32), blue 1180 (n=55), black 1393 (n=681), red 1619 (n=191), brown 1627 (n=25), orange 1784 (n=21)
+  mean rank by true type (1 = best):
+    van 269 (n=47), truck 305 (n=301), pickup 455 (n=122), SUV 1095 (n=434), estate 1161 (n=17), bus 1177 (n=53), sedan 1223 (n=887), hatchback 1431 (n=139)

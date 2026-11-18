@@ -1,0 +1,34 @@
+k 5 seed 42 limit 0 boot 1000
+
+shift sets: AUROC and paired median delta (same image)
+veri_noise_s1    auroc=0.758 delta=+0.0907
+veri_noise_s2    auroc=0.844 delta=+0.1130
+veri_blur_s1     auroc=0.826 delta=+0.1262
+veri_blur_s2     auroc=0.833 delta=+0.1108
+veri_jpeg_s1     auroc=0.805 delta=+0.1093
+veri_jpeg_s2     auroc=0.949 delta=+0.1582
+veri_dark_s1     auroc=0.679 delta=+0.0626
+veri_dark_s2     auroc=0.866 delta=+0.1563
+veri_fog_s1      auroc=0.589 delta=+0.0293
+veri_fog_s2      auroc=0.738 delta=+0.0869
+veri_recode_s1   auroc=0.511 delta=+0.0002
+
+per-set rates at each threshold (1.0, 1.03, 1.05, 1.08)
+clean sets: fraction flagged (score > t)
+  veri_id_same     [0.06, 0.012, 0.004, 0.002]
+  veri_id_val      [0.06, 0.016, 0.008, 0.0]
+OOD sets: fraction accepted (score <= t)
+  ccpd_base        [0.002, 0.01, 0.03, 0.068]
+  ccpd_weather     [0.0, 0.006, 0.018, 0.034]
+  ccpd_blur        [0.0, 0.0, 0.006, 0.042]
+  ccpd_challenge   [0.016, 0.024, 0.042, 0.068]
+  vmmr             [0.014, 0.04, 0.08, 0.204]
+
+image sizes (w x h): median w, median h, median aspect w/h
+  veri_id_same     n=500 w=226 h=204 aspect=1.13 pixels min=3886 max=540000
+  veri_id_val      n=500 w=220 h=190 aspect=1.14 pixels min=4914 max=455040
+  ccpd_base        n=500 w=720 h=1160 aspect=0.62 pixels min=835200 max=835200
+  ccpd_weather     n=500 w=720 h=1160 aspect=0.62 pixels min=835200 max=835200
+  ccpd_blur        n=500 w=720 h=1160 aspect=0.62 pixels min=835200 max=835200
+  ccpd_challenge   n=500 w=720 h=1160 aspect=0.62 pixels min=835200 max=835200
+  vmmr             n=500 w=548 h=408 aspect=1.34 pixels min=28702 max=852880

@@ -1,0 +1,64 @@
+set  n  min p05 p50 p95 max  counts in [(1.04, 1.07), (1.13, 1.24)]
+veri_id_same     n= 500 0.370 0.613 0.887 1.003 1.089 bands=[2, 0]
+veri_id_val      n= 500 0.444 0.608 0.875 1.007 1.078 bands=[3, 0]
+ccpd_base        n= 500 0.972 1.064 1.173 1.218 1.244 bands=[18, 386]
+ccpd_weather     n= 500 1.001 1.098 1.180 1.219 1.246 bands=[11, 434]
+ccpd_blur        n= 500 1.039 1.082 1.168 1.211 1.233 bands=[12, 410]
+ccpd_challenge   n= 500 0.959 1.067 1.164 1.210 1.242 bands=[8, 388]
+vmmr             n= 500 0.953 1.033 1.115 1.173 1.201 bands=[52, 172]
+veri_noise_s1    n= 200 0.568 0.726 0.977 1.072 1.109 bands=[24, 0]
+veri_noise_s2    n= 200 0.676 0.866 0.994 1.091 1.118 bands=[35, 0]
+veri_blur_s1     n= 200 0.543 0.748 1.025 1.136 1.162 bands=[28, 15]
+veri_blur_s2     n= 200 0.752 0.876 0.993 1.083 1.118 bands=[25, 0]
+veri_jpeg_s1     n= 200 0.614 0.737 1.005 1.097 1.124 bands=[33, 0]
+veri_jpeg_s2     n= 200 0.788 0.953 1.048 1.120 1.158 bands=[44, 6]
+veri_dark_s1     n= 200 0.423 0.663 0.961 1.064 1.105 bands=[16, 0]
+veri_dark_s2     n= 200 0.707 0.805 1.048 1.134 1.174 bands=[33, 13]
+veri_fog_s1      n= 200 0.464 0.650 0.915 1.028 1.062 bands=[3, 0]
+veri_fog_s2      n= 200 0.535 0.747 0.974 1.088 1.153 bands=[19, 2]
+veri_recode_s1   n= 200 0.369 0.599 0.890 1.002 1.032 bands=[0, 0]
+
+highest 10 clean VeRi
+  1.0895 veri_id_same VeRi/image_test/0510_c006_00031110_1.jpg
+  1.0780 veri_id_val VeRi/image_train/0051_c014_00046135_0.jpg
+  1.0754 veri_id_val VeRi/image_train/0444_c012_00034815_0.jpg
+  1.0672 veri_id_val VeRi/image_train/0381_c016_00064130_0.jpg
+  1.0627 veri_id_val VeRi/image_train/0012_c001_00048655_0.jpg
+  1.0507 veri_id_same VeRi/image_test/0609_c019_00015065_1.jpg
+  1.0470 veri_id_same VeRi/image_test/0182_c011_00039845_0.jpg
+  1.0454 veri_id_val VeRi/image_train/0556_c015_00034950_0.jpg
+  1.0391 veri_id_val VeRi/image_train/0432_c013_00086095_0.jpg
+  1.0385 veri_id_val VeRi/image_train/0384_c013_00044425_0.jpg
+
+lowest 10 CCPD/VMMR
+  0.9527 vmmr /path/to/vmmr_subset/images/audi_a4_2003/audi_a4_2003_3.jpg
+  0.9539 vmmr /path/to/vmmr_subset/images/hummer_h3_2007/2007 hummer h3_00I0I_fLBEaFTdZBx_600x450.jpg
+  0.9557 vmmr /path/to/vmmr_subset/images/porsche_911_1996/1996 porsche 911 carrera 4_00T0T_6mLYVGixDER_600x450.jpg
+  0.9569 vmmr /path/to/vmmr_subset/images/gmc_savana_3500_1997/1997 GMC Savana 3500_00w0w_62KECGIYdDI_600x450.jpg
+  0.9591 ccpd_challenge /path/to/ccpd_subset/images/023472.jpg
+  0.9662 vmmr /path/to/vmmr_subset/images/hummer_h3_2007/2007 hummer h3_00C0C_dNzSZ1Kljl3_600x450.jpg
+  0.9675 ccpd_challenge /path/to/ccpd_subset/images/022272.jpg
+  0.9694 ccpd_challenge /path/to/ccpd_subset/images/023469.jpg
+  0.9709 ccpd_challenge /path/to/ccpd_subset/images/022393.jpg
+  0.9717 ccpd_base /path/to/ccpd_subset/images/002408.jpg
+
+highest 10 anywhere
+  1.2459 ccpd_weather /path/to/ccpd_subset/images/033048.jpg
+  1.2443 ccpd_base /path/to/ccpd_subset/images/014484.jpg
+  1.2425 ccpd_challenge /path/to/ccpd_subset/images/023440.jpg
+  1.2374 ccpd_weather /path/to/ccpd_subset/images/033478.jpg
+  1.2362 ccpd_base /path/to/ccpd_subset/images/013733.jpg
+  1.2354 ccpd_weather /path/to/ccpd_subset/images/033657.jpg
+  1.2344 ccpd_base /path/to/ccpd_subset/images/012210.jpg
+  1.2327 ccpd_blur /path/to/ccpd_subset/images/020267.jpg
+  1.2323 ccpd_blur /path/to/ccpd_subset/images/020495.jpg
+  1.2317 ccpd_challenge /path/to/ccpd_subset/images/022466.jpg
+
+in-sample thresholds: n_id 1000 n_ood 2500
+thr  id_flagged  ood_accepted
+0.95  0.216  0.000
+1.00  0.060  0.006
+1.03  0.014  0.016
+1.05  0.006  0.035
+1.08  0.001  0.083
+1.10  0.000  0.143
