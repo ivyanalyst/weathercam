@@ -11,8 +11,7 @@ what was measured.
 - Repo HEAD during the OOD run: 982e630. Analysis and text scripts were
   added in 59eb8fb.
 - Service: `OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery_2000.npz ./run.sh`
-  at http://127.0.0.1:8014. No VERI_ZIP was mounted. The service was
-  restarted before the smoke test, using the same image and files.
+  at http://127.0.0.1:8014. No VERI_ZIP was mounted.
 - Model: ViT-B-16 laion2b_s34b_b88k, dim 512, CPU only, about 0.76 s per
   image.
 - OOD score: embedding standardised with the service mean/std, L2
@@ -123,7 +122,7 @@ the gallery.
 | vmmr | 1.115 | 1.033 | 1.173 | 0.953 | 1.201 |
 
 No clean VeRi image scored 1.10 or more, and none was in the 1.13 to 1.24
-band (0 of 1,000). Seven of the ten lowest-scoring CCPD/VMMR images are VMMR.
+band (0 of 1,000). Five of the ten lowest-scoring CCPD/VMMR images are VMMR (the other five are CCPD challenge or base).
 
 ### Other-source sets versus clean VeRi
 
@@ -257,7 +256,7 @@ Reading the table:
   vehicles.
 - Green: the top 10 is ten green buses from two vehicles. Green cars
   overall rank at about the gallery average (mean rank 959 of 2000), and 98
-  of the 127 green images are pickups, which rank worst for this query. This
+  of the 127 green images are pickups, which rank among the worst for this query (mean rank 1175; only estate, n=17, ranks lower). This
   fits the chance-level AUROC of 0.522 (consistent with, not proven by, the
   diagnostics in eval/diag_text_out.txt).
 - Hatchback: four of the top 10 are one orange hatchback vehicle; the
@@ -270,8 +269,9 @@ Reading the table:
   queries "yellow truck" and "green pickup" test little beyond the colour
   alone and cannot separate colour from type.
 - Similarity scores are not comparable across queries. Mean score of
-  correct hits is 0.15 to 0.19 for colour queries and 0.23 to 0.27 for type
-  and combined queries, and the mean score of misses for type queries (up to
+  correct hits is 0.15 to 0.19 for colour queries and 0.23 to 0.26 for type
+  queries, 0.25 to 0.27 for six of the seven combined queries (green pickup
+  0.182), and the mean score of misses for type queries (up to
   0.217) is higher than that of correct hits for colour queries. No text
   threshold is proposed.
 
