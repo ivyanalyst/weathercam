@@ -9,6 +9,7 @@ PARAMS = {
     "jpeg": {1: 20, 2: 5},         # JPEG quality of the corrupted image
     "dark": {1: 0.4, 2: 0.15},     # brightness multiplier
     "fog": {1: 0.4, 2: 0.7},       # uniform haze: blend toward light gray (225)
+    "recode": {1: 95},  # control: re-save only
 }
 SAVE_QUALITY = 95  # re-encode quality for every non-jpeg corruption
 
@@ -27,6 +28,8 @@ def apply(raw: bytes, name: str, severity: int, seed: int, key: str) -> bytes:
     elif name == "fog":
         arr = np.asarray(img, dtype=np.float32) * (1 - p) + p * 225.0
         img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+    elif name == "recode":
+        pass
     elif name != "jpeg":
         raise ValueError(name)
     buf = io.BytesIO()

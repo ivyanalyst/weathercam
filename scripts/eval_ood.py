@@ -107,18 +107,18 @@ def main():
         if s["role"] == "in":
             continue
         if s["role"] == "ood":
-            targets = {"veri_id_new": scores["veri_id_new"], "veri_id_same": scores["veri_id_same"]}
-        else:  # shift: reference = id_new minus the images that were corrupted (no pairing leak)
+            targets = {"veri_id_val": scores["veri_id_val"], "veri_id_same": scores["veri_id_same"]}
+        else:  # shift: reference = id_same minus the images that were corrupted (no pairing leak)
             used = set(refs[name])
-            keep = [i for i, r in enumerate(refs["veri_id_new"]) if r not in used]
-            targets = {"veri_id_new_minus_base": scores["veri_id_new"][keep]}
+            keep = [i for i, r in enumerate(refs["veri_id_same"]) if r not in used]
+            targets = {"veri_id_same_minus_base": scores["veri_id_same"][keep]}
         for rname, neg in targets.items():
             if len(neg) < 10:
                 print(f"skip {name} vs {rname}: reference n={len(neg)} < 10"); continue
             c = compare(neg, scores[name], rng, a.boot)
             c.update({"ood_set": name, "role": s["role"], "reference": rname})
             if s["role"] == "shift":
-                clean = dict(zip(refs["veri_id_new"], scores["veri_id_new"]))
+                clean = dict(zip(refs["veri_id_same"], scores["veri_id_same"]))
                 d = [v - clean[r] for r, v in zip(refs[name], scores[name]) if r in clean]
                 c["paired_median_delta"] = float(np.median(d)) if d else None
             comps.append(c)
