@@ -1,6 +1,6 @@
 # WeatherCam
 
-Research code for vehicle attributes, plate reading, text-to-image retrieval and data mining on CCTV-style images, with a focus on adverse weather. It is a personal learning project and is for research use only.
+Research code for vehicle attributes, plate reading, text-to-image retrieval and data mining on CCTV-style images, with a focus on adverse weather. An independent research and engineering project exploring vehicle attribute recognition, retrieval, and OOD behavior under adverse weather. Built for research and educational use.
 
 The pipeline is inspired by Veri-Car (Muñoz et al., arXiv 2411.06864):
 
