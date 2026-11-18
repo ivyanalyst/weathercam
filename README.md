@@ -9,10 +9,9 @@ The pipeline is inspired by Veri-Car (Muñoz et al., arXiv 2411.06864):
 
 Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/16, laion2b_s34b_b88k, with small heads). Test data was not used for tuning: each test set was scored once, with settings fixed beforehand.
 
-- Text-to-image search was measured on 21 queries over 2000 VeRi test images (see RESULTS.md): 20 of 21 have full-ranking AUROC >= 0.85, and green is 0.522. Weather queries are unscored because the gallery has no weather labels. The first retrieval version used histograms, and a zero-shot test of camera view with text prompts was a negative result (accuracy 0.603 against a 0.564 majority baseline).
-
 ## What was not measured
 
+- Text-to-image search was measured on 21 queries over 2000 VeRi test images (see RESULTS.md): 20 of 21 have full-ranking AUROC >= 0.85, and green is 0.522. Weather queries are unscored because the gallery has no weather labels. The first retrieval version used histograms, and a zero-shot test of camera view with text prompts was a negative result (accuracy 0.603 against a 0.564 majority baseline).
 - Plate reading is weak off its training distribution: exact match 0.4470 on the test set against 0.9447 on validation. The service therefore returns a detector score and a per-position confidence, not a "confident" label.
 - Out-of-distribution AUROC does not give a usable threshold, and the high values are mostly a dataset difference.
 - The weather head is trained on DAWN only and has four classes.
@@ -29,6 +28,8 @@ Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/1
 | Retrieval, plain | VeRi, leave-one-out | P@1 0.9431, mAP@R 0.4046 |
 | Retrieval, camera-aware | VeRi, leave-one-out | P@1 0.7489, mAP@R 0.3484 (raw 512-d: 0.5066, 0.1116) |
 | Out-of-distribution, kNN k=5 | DAWN, VMMRdb | AUROC 0.9988, 0.9945 |
+| Out-of-distribution, kNN k=5, other source | VMMR vs clean VeRi, 500 each | AUROC 0.996 [0.994, 0.998] |
+| Text search, 21 queries | VeRi test, 2000 images | 20 of 21 with AUROC >= 0.85; green 0.522 |
 | Plate detector | CCPD test | IoU > 0.7 in 0.9895 of images (top-1 box only) |
 | Plate OCR | CCPD test | exact match 0.4470, CER 0.1412 |
 
@@ -41,6 +42,7 @@ Limits that go with the table:
 - The CCPD protocol (one box per image, IoU > 0.7, exact match) follows the CCPD README, but the models, subsets and splits differ from its baseline table, so the numbers are not comparable. Thirteen test images whose labelled box is not on the plate are excluded from the true-box OCR numbers only.
 - Robustness: holding one weather class out gave an OOD AUROC of about 0.73 for the kNN score against about 0.69 for the baseline. Among generic corruptions only blur caused a clear loss. Synthetic rain, snow and haze (strength 0.6) and blur (0.3) cost more than random feature noise of equal cosine similarity.
 - Selecting images for mining by k-center against random sampling gave mixed results.
+- Text search: P@1 is one trial per query and scores are not comparable across queries. Rare attributes have few matches (fewest: blue bus, 34). Colour and type are correlated in the gallery, so some queries test little beyond colour. Green is the failure case: the top 10 are ten green buses from two vehicles.
 
 ## Design
 
@@ -82,7 +84,7 @@ Known limits, seen in a browser check on small samples:
 - The weather head labelled a clear photo of a US sedan as fog (86%). It was never validated on such photos.
 - The type head called the rear of a Ford sedan a bus (61%) on a close-up CCPD image.
 - Plate readings on small VeRi crops have low scores and confidences (0.05 to 0.13 in the samples seen) and should not be trusted.
-- Text-search quality was never measured.
+- Text-search quality was measured on 21 queries only; weather queries are unscored (see RESULTS.md).
 - If a worker process dies, the service keeps running and /health still lists its feature. Requests to it return 502 until the service is restarted.
 - Large uploads, EXIF rotation, other image formats and concurrent use were not tested.
 
