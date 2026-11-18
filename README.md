@@ -84,8 +84,6 @@ Known limits, seen in a browser check on small samples:
 - Text-search quality was never measured.
 - If a worker process dies, the service keeps running and /health still lists its feature. Requests to it return 502 until the service is restarted.
 - Large uploads, EXIF rotation, other image formats and concurrent use were not tested.
-cd /path/to/weathercam
-cat >> README.md <<'EOF'
 
 ## Run it yourself (Docker, CPU only)
 
@@ -134,16 +132,6 @@ Open http://127.0.0.1:8014
   smoke-tested: startup, `/health`, and all five panels.
 - Model quality is limited: the weather, type and brand heads make
   visible mistakes.
-EOF
-
-echo '*.tar.gz' >> .gitignore
-chmod +x run.sh
-git add run.sh README.md .gitignore
-git status --short
-git ls-files -s run.sh
-git commit -m "Phase 14: run.sh and README run section"
-git log --oneline -1
-git status --short
 - Plate search compares your query with the whole reading (province character included), so `AZ5761` is 1 edit from `皖AZ5761`; a query that is 2 characters short needs max edits 2.
 
 Phase 16 measurements (OOD scoring and text search): see RESULTS.md.
