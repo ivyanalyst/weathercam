@@ -146,4 +146,4 @@ git log --oneline -1
 git status --short
 - Plate search compares your query with the whole reading (province character included), so `AZ5761` is 1 edit from `皖AZ5761`; a query that is 2 characters short needs max edits 2.
 
-Phase 15 measurements (OOD scoring and text search): see RESULTS.md.
+Phase 16 measurements (OOD scoring and text search): see RESULTS.md.
