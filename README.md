@@ -11,7 +11,7 @@ Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/1
 
 ## What was not measured
 
-- Text-to-image search was measured on 21 queries over 2000 VeRi test images (see RESULTS.md): 20 of 21 have full-ranking AUROC >= 0.85, and green is 0.522. Weather queries are unscored because the gallery has no weather labels. The first retrieval version used histograms, and a zero-shot test of camera view with text prompts was a negative result (accuracy 0.603 against a 0.564 majority baseline).
+- Text-to-image search was measured on 21 queries only (results in the table below). Weather queries (fog, haze, rain, sand storm) are unscored: the gallery has no weather labels, only similarity ranges exist. The first retrieval version used histograms, and a zero-shot test of camera view with text prompts was a negative result (accuracy 0.603 against a 0.564 majority baseline).
 - Plate reading is weak off its training distribution: exact match 0.4470 on the test set against 0.9447 on validation. The service therefore returns a detector score and a per-position confidence, not a "confident" label.
 - Out-of-distribution AUROC does not give a usable threshold, and the high values are mostly a dataset difference.
 - The weather head is trained on DAWN only and has four classes.
