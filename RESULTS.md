@@ -122,7 +122,8 @@ the gallery.
 | vmmr | 1.115 | 1.033 | 1.173 | 0.953 | 1.201 |
 
 No clean VeRi image scored 1.10 or more, and none was in the 1.13 to 1.24
-band (0 of 1,000). Five of the ten lowest-scoring CCPD/VMMR images are VMMR (the other five are CCPD challenge or base).
+band (0 of 1,000). Five of the ten lowest-scoring CCPD/VMMR images are VMMR
+(the other five are CCPD challenge or base).
 
 ### Other-source sets versus clean VeRi
 
@@ -256,7 +257,8 @@ Reading the table:
   vehicles.
 - Green: the top 10 is ten green buses from two vehicles. Green cars
   overall rank at about the gallery average (mean rank 959 of 2000), and 98
-  of the 127 green images are pickups, which rank among the worst for this query (mean rank 1175; only estate, n=17, ranks lower). This
+  of the 127 green images are pickups, which rank among the worst for this
+  query (mean rank 1175; only estate, n=17, ranks lower). This
   fits the chance-level AUROC of 0.522 (consistent with, not proven by, the
   diagnostics in eval/diag_text_out.txt).
 - Hatchback: four of the top 10 are one orange hatchback vehicle; the
