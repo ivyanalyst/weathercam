@@ -78,6 +78,7 @@ def _reading(reading):
         return None
     return {
         "text": reading.text,
+        "text_latin": handlers.latin_text(reading.text),
         "confidence": reading.confidence,
         "positions": list(reading.positions),
     }

@@ -1,5 +1,6 @@
 import numpy as np
 
+from weathercam.data.ccpd import from_latin_plate, to_latin_plate
 from weathercam.plates.fuzzy import match_plate, plate_distance
 from weathercam.retrieval.index import BruteForceIndex
 from weathercam.retrieval.ood import knn_distances
@@ -80,6 +81,20 @@ def search_text(encoder, gallery, texts, k):
     return gallery.search(encoder.encode_text(items), k)
 
 
+def latin_text(text):
+    try:
+        return to_latin_plate(text)
+    except ValueError:
+        return text
+
+
+def native_query(query):
+    try:
+        return from_latin_plate(query.strip().upper())
+    except ValueError:
+        return query
+
+
 def read_plates(reader, blobs):
     items = list(blobs)
     results = list(reader.read_plates(items))
@@ -93,6 +108,7 @@ def read_plates(reader, blobs):
 def find_plates(results, query, max_edits):
     if max_edits < 0:
         raise ValueError(f"max_edits must be >= 0, got {max_edits}")
+    query = native_query(query)
     matches = []
     for index, result in enumerate(results):
         if result.reading is None:
