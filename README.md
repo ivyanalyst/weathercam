@@ -13,7 +13,18 @@ Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/1
 
 - Text-to-image search was measured on 21 queries only (results in the table below). Weather queries (fog, haze, rain, sand storm) are unscored: the gallery has no weather labels, only similarity ranges exist. The first retrieval version used histograms, and a zero-shot test of camera view with text prompts was a negative result (accuracy 0.603 against a 0.564 majority baseline).
 - Plate reading is weak off its training distribution: exact match 0.4470 on the test set against 0.9447 on validation. The service therefore returns a detector score and a per-position confidence, not a "confident" label.
-- Out-of-distribution AUROC does not give a usable threshold, and the high values are mostly a dataset difference.
+- Plates: trained on Chinese plates only (CCPD). No plates from other
+  countries were used or measured, so behaviour on them is unknown. Expect it
+  to be weaker there; this is not measured. The service stores readings
+  in the Chinese format and shows the province as Latin letters.
+- Out-of-distribution: no threshold is set. The service shows the raw kNN
+  score only. The high AUROC values (0.996 for VMMR against clean VeRi)
+  separate one dataset from another, so they mostly reflect a dataset
+  difference (source, camera, framing). They were not shown to detect
+  weather, haze or fog. On corrupted VeRi the AUROC ranged from 0.589
+  (haze) to 0.949 (JPEG) depending on the corruption. A usable threshold
+  would need images from the target camera and its own false-accept and
+  false-reject rates. That was not measured.
 - The weather head is trained on DAWN only and has four classes.
 - The colour and type heads are trained on VeRi. Brand uses VMMRdb makes (43 classes including "unknown").
 
@@ -27,7 +38,7 @@ Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/1
 | Weather, 4 classes | DAWN test | 138/150 = 0.9200 (Wilson 0.8654-0.9536) |
 | Retrieval, plain | VeRi, leave-one-out | P@1 0.9431, mAP@R 0.4046 |
 | Retrieval, camera-aware | VeRi, leave-one-out | P@1 0.7489, mAP@R 0.3484 (raw 512-d: 0.5066, 0.1116) |
-| Out-of-distribution, kNN k=5 | DAWN, VMMRdb | AUROC 0.9988, 0.9945 |
+| OOD, kNN k=5, earlier run, bank overlap not rechecked | DAWN, VMMRdb | AUROC 0.9988, 0.9945 |
 | Out-of-distribution, kNN k=5, other source | VMMR vs clean VeRi, 500 each | AUROC 0.996 [0.994, 0.998] |
 | Text search, 21 queries | VeRi test, 2000 images | 20 of 21 with AUROC >= 0.85; green 0.522 |
 | Plate detector | CCPD test | IoU > 0.7 in 0.9895 of images (top-1 box only) |
@@ -38,6 +49,9 @@ Limits that go with the table:
 - Brand accuracy compares with 0.025 for always predicting the most frequent class.
 - Weather: the test accuracy rests on 150 images, and the validation macro-F1 is 0.7889, so 0.92 should not be quoted alone.
 - Retrieval uses a leave-one-out protocol over vehicles, not the VeRi query/gallery split. Its mAP@R is not the VeRi-standard mAP and is not comparable to published VeRi numbers. These rows use a 128-d metric head.
+- Plain retrieval counts frames from the same camera as correct;
+  camera-aware counts only frames from other cameras. Read the camera-aware
+  rows as the cross-camera result.
 - Query expansion (k 10, weight 8) raised camera-aware P@1 to 0.7616 and mAP@R to 0.3964, but lowered plain P@1 to 0.8862.
 - The CCPD protocol (one box per image, IoU > 0.7, exact match) follows the CCPD README, but the models, subsets and splits differ from its baseline table, so the numbers are not comparable. Thirteen test images whose labelled box is not on the plate are excluded from the true-box OCR numbers only.
 - Robustness: holding one weather class out gave an OOD AUROC of about 0.73 for the kNN score against about 0.69 for the baseline. Among generic corruptions only blur caused a clear loss. Synthetic rain, snow and haze (strength 0.6) and blur (0.3) cost more than random feature noise of equal cosine similarity.
@@ -46,7 +60,7 @@ Limits that go with the table:
 
 ## Design
 
-- Metrics (IoU, NMS, AP/mAP, CER, classification, retrieval, ROC AUC), splits, augmentation, corruptions, the kNN index, OOD scoring, k-center, near-duplicate grouping and the service are own code. Libraries are used only for weights, CLIP and tests.
+- Metrics (IoU, NMS, AP/mAP, CER, classification, retrieval, ROC AUC), splits, augmentation, corruptions, the kNN index, OOD scoring, k-center, near-duplicate grouping and the service are own code. Libraries: NumPy, Pillow, PyYAML and psutil; OpenCLIP and Ultralytics YOLO11m for the pretrained models; pytest for tests.
 - src/weathercam never imports torch or ultralytics. Code that needs them lives in research/ and runs in separate environments (Kaggle or local virtual environments). Heads and all scoring run with NumPy.
 - The service layer (src/weathercam/service) has handlers free of torch and web frameworks. Embedding and plate reading run as two subprocess workers over JSON lines, with hash-checked weights and a memory check.
 - scripts/check_service.py reproduces stored validation numbers and checks that the workers agree with stored outputs on a small sample (16 images each). The plate sample was not stratified by province or subset, and uploads of other formats or with EXIF rotation were not tested.
@@ -78,7 +92,7 @@ The service serves a single HTML page at GET / (no external scripts, fonts or re
 
 Launch (all features):
 
-    python3 scripts/run_service.py --embed-worker-python /path/to/venvs/clip/bin/python --plate-worker-python /path/to/venvs/yolo/bin/python --gallery /tmp/gallery_2000.npz --image-zip /path/to/VeRi.zip --port 8014
+    python3 scripts/run_service.py --embed-worker-python /path/to/clip-venv/bin/python --plate-worker-python /path/to/yolo-venv/bin/python --gallery /path/to/gallery_2000.npz --image-zip /path/to/VeRi.zip --port 8014
 
 Known limits, seen in a browser check on small samples:
 - The weather head labelled a clear photo of a US sedan as fog (86%). It was never validated on such photos.
@@ -128,13 +142,15 @@ Open http://127.0.0.1:8014
   `favicon.ico` 404. No token is needed.
 - A worker that dies is not reported: `/health` still lists the feature
   and requests return 502 until you restart the container.
-- Plate search: include the province character (e.g. 皖AZ5761) or allow
-  at least 1 edit.
+- Plate search: type the reading as shown, e.g. JS-D9157K (province
+  code, hyphen, 6 characters). It is converted back to the stored reading
+  before matching. A query without a valid code is used as typed and compared
+  with the whole stored reading, so AZ5761 is 1 edit away from a reading
+  with a province character; a query 2 characters short needs max edits 2.
 - JPEG/PNG only; HEIC is not supported.
 - Tests run on the host (`pytest`), not inside the image. The image is
   smoke-tested: startup, `/health`, and all five panels.
 - Model quality is limited: the weather, type and brand heads make
   visible mistakes.
-- Plate search compares your query with the whole reading (province character included), so `AZ5761` is 1 edit from `皖AZ5761`; a query that is 2 characters short needs max edits 2.
 
 Phase 16 measurements (OOD scoring and text search): see RESULTS.md.
