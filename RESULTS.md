@@ -8,8 +8,8 @@ what was measured.
 
 ## Environment
 
-- Repo HEAD during the OOD run: 982e630. Analysis and text scripts were
-  added in 59eb8fb.
+- Repo HEAD during the OOD run: 45cea19. Analysis and text scripts were
+  added in 445ccb5.
 - Service: `OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery_2000.npz ./run.sh`
   at http://127.0.0.1:8014. No VERI_ZIP was mounted.
 - Model: ViT-B-16 laion2b_s34b_b88k, dim 512, CPU only, about 0.76 s per
@@ -105,7 +105,7 @@ The first veri_id_new set was drawn from VeRi train images. 384 of its 500
 images (76.8%) were in the OOD bank, so each was its own nearest neighbour.
 It was never reported and has been removed. The cause was my set
 construction, which excluded gallery vehicles but never checked the bank.
-Fixed in 982e630: the sets are rebuilt with the service's own inner split,
+Fixed in 45cea19: the sets are rebuilt with the service's own inner split,
 and build_sets.py asserts that no in-distribution set touches the bank or
 the gallery.
 
