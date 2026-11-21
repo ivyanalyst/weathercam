@@ -29,3 +29,4 @@ dist/
 /configs/local.yaml
 *.tar.gz
 eval/smoke/
+!demo/gallery_demo.npz
