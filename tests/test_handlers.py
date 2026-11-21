@@ -1,12 +1,15 @@
 import numpy as np
 import pytest
 
+from weathercam.data.ccpd import PROVINCES, PROVINCES_LATIN
 from weathercam.plates.ocr import PlateReading
 from weathercam.retrieval.ood import knn_distances
 from weathercam.service.handlers import (
     GalleryIndex,
     attributes,
     find_plates,
+    latin_text,
+    native_query,
     ood_scores,
     read_plates,
     search_text,
@@ -113,7 +116,13 @@ def test_ood_scores_match_knn_on_standardised_input():
 
 def test_ood_scores_standardise_first():
     bank = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
-    got = ood_scores(bank, np.array([[3.0, 0.0]]), np.array([1.0, 0.0]), np.array([2.0, 1.0]), k=1)
+    got = ood_scores(
+        bank,
+        np.array([[3.0, 0.0]]),
+        np.array([1.0, 0.0]),
+        np.array([2.0, 1.0]),
+        k=1,
+    )
     assert got[0] == pytest.approx(0.0, abs=1e-6)
 
 
@@ -131,7 +140,9 @@ def test_ood_scores_reject_wrong_width():
 
 
 def test_gallery_without_projector_ranks_by_cosine():
-    gallery = GalleryIndex(["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]))
+    gallery = GalleryIndex(
+        ["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    )
     result = gallery.search(np.array([[0.1, 0.0, 1.0]]), 2)
     assert [name for name, _ in result[0]] == ["b", "a"]
     assert result[0][0][1] == pytest.approx(0.995037, abs=1e-5)
@@ -149,7 +160,9 @@ def test_gallery_with_projector_uses_projection():
 
 
 def test_gallery_returns_one_list_per_query():
-    gallery = GalleryIndex(["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))
+    gallery = GalleryIndex(
+        ["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    )
     result = gallery.search(np.array([[1.0, 0.1, 0.0], [0.1, 1.0, 0.0]]), 1)
     assert [row[0][0] for row in result] == ["a", "b"]
 
@@ -160,7 +173,9 @@ def test_gallery_rejects_name_count_mismatch():
 
 
 def test_gallery_rejects_bad_k():
-    gallery = GalleryIndex(["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))
+    gallery = GalleryIndex(
+        ["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    )
     with pytest.raises(ValueError):
         gallery.search(np.ones((1, 3)), 3)
     with pytest.raises(ValueError):
@@ -177,7 +192,9 @@ def test_gallery_len_and_projected_flag():
 
 
 def test_search_text_uses_encoder_output():
-    gallery = GalleryIndex(["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))
+    gallery = GalleryIndex(
+        ["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    )
     encoder = FakeEncoder({"x": [0.9, 0.1, 0.0], "y": [0.0, 1.0, 0.0]})
     result = search_text(encoder, gallery, ["x", "y"], 1)
     assert [row[0][0] for row in result] == ["a", "b"]
@@ -192,7 +209,9 @@ def test_search_text_refuses_projected_gallery():
 
 
 def test_search_text_rejects_empty_texts():
-    gallery = GalleryIndex(["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))
+    gallery = GalleryIndex(
+        ["a", "b"], np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    )
     with pytest.raises(ValueError):
         search_text(FakeEncoder({}), gallery, [], 1)
 
@@ -229,3 +248,48 @@ def test_find_plates_skips_unread_images():
 def test_find_plates_rejects_negative_edits():
     with pytest.raises(ValueError):
         find_plates([], "AB12345", -1)
+
+
+def jiangsu():
+    return PROVINCES[PROVINCES_LATIN.index("JS")]
+
+
+def test_native_query_converts_latin_code():
+    assert native_query("JS-D9157K") == jiangsu() + "D9157K"
+
+
+def test_native_query_strips_and_uppercases_before_converting():
+    assert native_query(" js-d9157k ") == jiangsu() + "D9157K"
+
+
+def test_native_query_leaves_plain_text_unchanged():
+    assert native_query("AZ5761") == "AZ5761"
+
+
+def test_native_query_unknown_code_unchanged():
+    assert native_query("XX-D9157K") == "XX-D9157K"
+
+
+def test_native_query_wrong_length_unchanged():
+    assert native_query("JS-D915") == "JS-D915"
+
+
+def test_native_query_failure_returns_input_unstripped():
+    assert native_query(" xx-d9157k ") == " xx-d9157k "
+
+
+def test_latin_text_converts_reading():
+    assert latin_text(jiangsu() + "D9157K") == "JS-D9157K"
+
+
+def test_latin_text_wrong_length_unchanged():
+    assert latin_text("ABC") == "ABC"
+
+
+def test_latin_text_unknown_province_char_unchanged():
+    assert latin_text("Q" + "D9157K") == "Q" + "D9157K"
+
+
+def test_latin_text_native_query_round_trip():
+    plate = jiangsu() + "D9157K"
+    assert native_query(latin_text(plate)) == plate
