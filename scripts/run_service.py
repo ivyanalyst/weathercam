@@ -39,6 +39,7 @@ def parse_args():
     p.add_argument("--gallery")
     p.add_argument("--image-zip")
     p.add_argument("--no-ood", action="store_true")
+    p.add_argument("--text-only", action="store_true")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8000)
     p.add_argument("--request-timeout", type=float, default=120.0)
@@ -136,6 +137,10 @@ def main():
         sys.exit("--gallery needs --embed-worker-python")
     if args.image_zip and not args.gallery:
         sys.exit("--image-zip needs --gallery")
+    if args.text_only and args.plate_worker_python:
+        sys.exit("--text-only cannot be used with --plate-worker-python")
+    if args.text_only and not args.gallery:
+        sys.exit("--text-only needs --gallery")
     signal.signal(signal.SIGTERM, signal.default_int_handler)
     guard = MemoryGuard(args.memory_limit_mb)
     clients = []
@@ -143,8 +148,12 @@ def main():
     try:
         if args.embed_worker_python:
             encoder = start_embed(args, clients)
-            weather, attributes = load_heads()
-            ood = build_ood(args)
+            if args.text_only:
+                print("text-only mode: weather, attributes, "
+                      "ood, plates off", flush=True)
+            else:
+                weather, attributes = load_heads()
+                ood = build_ood(args)
             if args.gallery:
                 gallery = load_gallery(args.gallery)
                 if args.image_zip:

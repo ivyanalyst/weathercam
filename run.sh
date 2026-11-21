@@ -7,18 +7,29 @@ OUTPUTS="${OUTPUTS:-$PWD/outputs}"
 HF_DIR="${HF_DIR:-$HOME/.cache/weathercam-hf}"
 GALLERY_NPZ="${GALLERY_NPZ:-}"
 VERI_ZIP="${VERI_ZIP:-}"
+TEXT_ONLY="${TEXT_ONLY:-}"
 
-CMD_ARGS=(--embed-worker-python /venvs/embed/bin/python --plate-worker-python /venvs/yolo/bin/python)
+CMD_ARGS=(--embed-worker-python /venvs/embed/bin/python)
+if [ "$TEXT_ONLY" = "1" ]; then
+  CMD_ARGS+=(--text-only)
+else
+  CMD_ARGS+=(--plate-worker-python /venvs/yolo/bin/python)
+fi
 
 die() { echo "error: $*" >&2; exit 1; }
 
-[ -d "$OUTPUTS" ] || die "missing outputs dir: $OUTPUTS"
+[ -z "$TEXT_ONLY" ] || [ "$TEXT_ONLY" = "1" ] || die "TEXT_ONLY must be 1 or unset"
+if [ "$TEXT_ONLY" = "1" ]; then
+  [ -n "$GALLERY_NPZ" ] || die "TEXT_ONLY=1 needs GALLERY_NPZ"
+else
+  [ -d "$OUTPUTS" ] || die "missing outputs dir: $OUTPUTS"
+fi
 mkdir -p "$HF_DIR"
 
-MOUNTS=(
-  -v "$OUTPUTS":/app/outputs:ro
-  -v "$HF_DIR":/hf
-)
+MOUNTS=(-v "$HF_DIR":/hf)
+if [ "$TEXT_ONLY" != "1" ]; then
+  MOUNTS+=(-v "$OUTPUTS":/app/outputs:ro)
+fi
 
 if [ -n "$GALLERY_NPZ" ]; then
   [ -f "$GALLERY_NPZ" ] || die "missing file: $GALLERY_NPZ"

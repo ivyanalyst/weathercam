@@ -355,3 +355,25 @@ def test_gallery_image_is_not_served_without_a_reader():
 def test_image_reader_needs_a_gallery():
     with pytest.raises(ValueError):
         create_app(image_reader=FakeImages({}))
+
+
+def test_text_only_reports_only_search_text():
+    client, _, _ = build(
+        weather_head=None,
+        attribute_heads=None,
+        ood=None,
+        plate_reader=None,
+    )
+    body = client.get("/health").json()
+    assert body["features"] == {
+        "weather": False,
+        "attributes": False,
+        "ood": False,
+        "plates": False,
+        "search_text": True,
+    }
+    for path in ("/weather", "/attributes", "/ood", "/plates"):
+        res = client.post(path, json={"images": [b64(IMAGE_A)]})
+        assert res.status_code == 503
+    found = client.post("/search/text", json={"texts": ["x"], "k": 1})
+    assert found.status_code == 200
