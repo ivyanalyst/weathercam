@@ -82,17 +82,34 @@ The main environment needs only numpy, pyyaml, psutil and pillow:
 
 ## Data and licences
 
-No datasets, dataset images, plate texts or trained weights are part of this repository. The datasets (VeRi, DAWN, CCPD2019, VMMRdb) must be obtained from their owners under their own terms; the terms as known are in THIRD_PARTY.md. Paths are set in configs/default.yaml and a git-ignored configs/local.yaml.
+No datasets, dataset images, plate texts or trained weights are part
+of this repository. The one exception is `demo/`: 39 AI-generated
+images with AI-generated plates, and their embeddings (these are not
+dataset images). Files under `eval/` and `scripts/queries.json` list
+VeRi image file names but contain no images. The datasets (VeRi, DAWN,
+CCPD2019, VMMRdb) must be obtained from their owners under their own
+terms; the terms as known are in THIRD_PARTY.md. Paths are set in
+configs/default.yaml and a git-ignored configs/local.yaml.
 
 The code is released under AGPL-3.0-or-later (see LICENSE); the detector dependency Ultralytics is AGPL-3.0. Third-party components and weights are listed in THIRD_PARTY.md, and references are in CITATION.cff.
 
 ## Web page
 
-The service serves a single HTML page at GET / (no external scripts, fonts or requests). It shows a panel for each feature that /health reports as enabled: weather, vehicle attributes, out-of-distribution scores (raw, no threshold), number plates (with an optional plate query) and text search. For text search each hit shows a thumbnail and then the weather, attributes and plate reading computed on that image. Thumbnails need `--image-zip` pointing to a VeRi zip that holds every gallery name.
+The service serves a single HTML page at GET / (no external scripts, fonts or requests). It shows a panel for each feature that /health reports as enabled: weather, vehicle attributes, out-of-distribution scores (raw, no threshold), number plates (with an optional plate query) and text search. For text search each hit shows a thumbnail and then the weather, attributes and plate reading computed on that image. Thumbnails need `--image-zip` pointing to a zip that holds every
+gallery name under VeRi/image_test/ (for the demo gallery:
+demo/demo_images.zip). With `--text-only` only text search is
+enabled in /health, and in one browser check the hits showed a
+thumbnail and similarity only.
 
 Launch (all features):
 
     python3 scripts/run_service.py --embed-worker-python /path/to/clip-venv/bin/python --plate-worker-python /path/to/yolo-venv/bin/python --gallery /path/to/gallery_2000.npz --image-zip /path/to/VeRi.zip --port 8014
+
+Launch (text search only, demo gallery, no trained heads needed):
+
+    python3 scripts/run_service.py --embed-worker-python PYTHON_CLIP \
+      --text-only --gallery demo/gallery_demo.npz \
+      --image-zip demo/demo_images.zip --port 8014
 
 Known limits, seen in a browser check on small samples:
 - The weather head labelled a clear photo of a US sedan as fog (86%). It was never validated on such photos.
@@ -112,18 +129,37 @@ Needs internet (installs packages from PyPI). The image is about 4 GB.
 
 ### What you need besides the image
 
-- `outputs/` folder: the model files and results the service reads.
-  Not stored in git; it is shared separately and mounted read-only.
-- `gallery_2000.npz`: the text-search index. Also shared separately.
-- Optional: the VeRi dataset zip, only for thumbnails in text search.
-  Everything else works without it.
+Two ways to run it.
+
+A. Demo gallery (anyone, text search only). The repository has 39
+AI-generated images and their embeddings in `demo/`. In this mode only
+the text search runs. The weather, attributes, OOD and plate panels are
+off, because trained weights are not distributed. The demo is not
+evidence of quality: 39 images, labels by the author, and the 21-query
+result does not apply to it. The zip folder is named VeRi to match the
+code; it holds no VeRi data.
+
+    TEXT_ONLY=1 GALLERY_NPZ=./demo/gallery_demo.npz \
+      VERI_ZIP=./demo/demo_images.zip ./run.sh
+
+Without Docker:
+
+    python3 scripts/run_service.py --embed-worker-python PATH \
+      --text-only --gallery demo/gallery_demo.npz \
+      --image-zip demo/demo_images.zip --port 8014
+
+B. Your own data. VeRi is not included; get it from its authors. Build
+embeddings with research/extract_embeddings.py and a gallery with
+scripts/build_gallery.py. The other panels need heads you train
+yourself, in `outputs/`, mounted read-only. Thumbnails need the zip.
 
 ### Start
 
     chmod +x run.sh
-    OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery_2000.npz ./run.sh
+    OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery.npz ./run.sh
     # with thumbnails:
-    OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery_2000.npz VERI_ZIP=/path/to/VeRi.zip ./run.sh
+    OUTPUTS=./outputs GALLERY_NPZ=/path/to/gallery.npz \
+      VERI_ZIP=/path/to/VeRi.zip ./run.sh
 
 Open http://127.0.0.1:8014
 
@@ -148,8 +184,16 @@ Open http://127.0.0.1:8014
   with the whole stored reading, so AZ5761 is 1 edit away from a reading
   with a province character; a query 2 characters short needs max edits 2.
 - JPEG/PNG only; HEIC is not supported.
+- Gallery thumbnails are sent with Cache-Control max-age=3600. After the
+  gallery changes, a normal browser window can show old images. Use a
+  private window.
+- Plate boxes on the AI demo trucks: on two of three the box sat on a
+  wheel and on the third no plate was found (single examples). No plate
+  accuracy is claimed for the demo images.
 - Tests run on the host (`pytest`), not inside the image. The image is
-  smoke-tested: startup, `/health`, and all five panels.
+  smoke-tested: startup, `/health`, and all five panels. Text-only mode
+  was started with the demo gallery and checked on `/health` and one
+  search (single example); it was not smoke-tested on all five panels.
 - Model quality is limited: the weather, type and brand heads make
   visible mistakes.
 
