@@ -49,7 +49,8 @@ queries are unscored.
 No dataset images, plate texts or trained weights are part of this
 repository. The one exception is demo/: 39 AI-generated images with
 AI-generated plates, and their embeddings (not dataset images). Files
-under eval/ and scripts/queries.json list VeRi image file names but
+under eval/ and scripts/queries.json list file names of VeRi, CCPD and
+VMMRdb images (some with placeholder paths such as /path/to/) but
 contain no images.
 
 ## Method reference

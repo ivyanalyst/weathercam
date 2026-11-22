@@ -86,7 +86,8 @@ No datasets, dataset images, plate texts or trained weights are part
 of this repository. The one exception is `demo/`: 39 AI-generated
 images with AI-generated plates, and their embeddings (these are not
 dataset images). Files under `eval/` and `scripts/queries.json` list
-VeRi image file names but contain no images. The datasets (VeRi, DAWN,
+file names of VeRi, CCPD and VMMRdb images (some with placeholder
+paths such as /path/to/) but contain no images. The datasets (VeRi, DAWN,
 CCPD2019, VMMRdb) must be obtained from their owners under their own
 terms; the terms as known are in THIRD_PARTY.md. Paths are set in
 configs/default.yaml and a git-ignored configs/local.yaml.
