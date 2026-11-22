@@ -80,6 +80,43 @@ The main environment needs only numpy, pyyaml, psutil and pillow:
     pip install pytest
     python3 -m pytest -q
 
+## Code structure and methods
+
+    src/weathercam/
+      core/        boxes, NMS, metrics (classification, detection, AUROC,
+                   text), config, memory guard
+      data/        readers (VeRi, CCPD, DAWN, VMMRdb), splits, near-duplicate
+                   grouping, corruptions, augmentation, YOLO export
+      detection/   class mapping, DAWN scoring, latency
+      plates/      crop, detector scoring, OCR decoding, fuzzy match
+      attributes/  softmax model, zero-shot classes, weather data
+                   loading, Wilson interval, majority baseline
+      retrieval/   features, index, metric head, query expansion,
+                   k-NN distance, mining, evaluation
+      review/      review queue and verdict log
+      service/     app, handlers, model heads, worker clients
+
+| Method | File | What the code does |
+|---|---|---|
+| Softmax regression | attributes/softmax.py | full-batch gradient descent, L2 on weights |
+| Zero-shot classes | attributes/zeroshot.py | prompt-averaged class vectors, scaled similarity softmax, per-track mean |
+| Metric head | retrieval/metric_head.py | linear projection, class prototypes, scaled cosine logits, softmax cross-entropy, hand-written gradients, SGD with momentum |
+| Query expansion | retrieval/rerank.py | adds the weighted mean of the nearest gallery neighbours to the query, then re-normalises |
+| k-center greedy | retrieval/mining.py | farthest-point selection on unit vectors, cosine |
+| k-NN distance | retrieval/ood.py | k-th nearest neighbour distance on unit vectors |
+| Plate decoding | plates/ocr.py | 7 fixed positions, softmax and argmax each, confidence = lowest position |
+| Fuzzy plate match | plates/fuzzy.py | Levenshtein distance within a maximum number of edits |
+| AUROC | core/roc_metrics.py | mid-ranks, Mann-Whitney form, ties count half |
+| NMS | core/nms.py | greedy, per class, IoU threshold 0.5 by default |
+| Grouped split | data/split.py | seeded, class-stratified, groups never divided |
+| Near-duplicate groups | data/neardup.py | 16x16 difference hash (256 bits), Hamming distance, union-find over all pairs within a threshold |
+| Review queue selection | review/queue.py | seeded; one random image per vehicle from the chosen split part; vehicles grouped by camera; images taken from cameras in turn until n |
+
+These parts are written in NumPy (the hash also uses Pillow). The
+pretrained models are not in this table. The review queue selection is
+the author's own simple design. No method in this table is claimed to
+be new.
+
 ## Human review
 
 A small review tool lets one person check the models' outputs image by
