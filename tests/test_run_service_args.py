@@ -2,6 +2,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("fastapi")
+pytest.importorskip("uvicorn")
+
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "run_service.py"
 
 

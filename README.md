@@ -60,7 +60,7 @@ Limits that go with the table:
 
 ## Design
 
-- Metrics (IoU, NMS, AP/mAP, CER, classification, retrieval, ROC AUC), splits, augmentation, corruptions, the kNN index, OOD scoring, k-center, near-duplicate grouping and the service are own code. Libraries: NumPy, Pillow, PyYAML and psutil; OpenCLIP and Ultralytics YOLO11m for the pretrained models; pytest for tests.
+- Metrics (IoU, NMS, AP/mAP, CER, classification, retrieval, ROC AUC), splits, augmentation, corruptions, the kNN index, OOD scoring, k-center, near-duplicate grouping and the service are own code. Libraries: NumPy, Pillow, PyYAML and psutil; FastAPI and uvicorn for the service; OpenCLIP and Ultralytics YOLO11m for the pretrained models; pytest for tests.
 - src/weathercam never imports torch or ultralytics. Code that needs them lives in research/ and runs in separate environments (Kaggle or local virtual environments). Heads and all scoring run with NumPy.
 - The service layer (src/weathercam/service) has handlers free of torch and web frameworks. Embedding and plate reading run as two subprocess workers over JSON lines, with hash-checked weights and a memory check.
 - scripts/check_service.py reproduces stored validation numbers and checks that the workers agree with stored outputs on a small sample (16 images each). The plate sample was not stratified by province or subset, and uploads of other formats or with EXIF rotation were not tested.
@@ -95,7 +95,7 @@ The code is released under AGPL-3.0-or-later (see LICENSE); the detector depende
 
 ## Web page
 
-The service serves a single HTML page at GET / (no external scripts, fonts or requests). It shows a panel for each feature that /health reports as enabled: weather, vehicle attributes, out-of-distribution scores (raw, no threshold), number plates (with an optional plate query) and text search. For text search each hit shows a thumbnail and then the weather, attributes and plate reading computed on that image. Thumbnails need `--image-zip` pointing to a zip that holds every
+The service serves a single HTML page at GET / (no external scripts, fonts or requests). It shows a panel for each feature that /health reports as enabled: weather, vehicle attributes, out-of-distribution scores (raw, no threshold), number plates (with an optional plate query) and text search. For text search each hit shows a thumbnail and, for each enabled feature, the weather, attributes and plate reading computed on that image. Thumbnails need `--image-zip` pointing to a zip that holds every
 gallery name under VeRi/image_test/ (for the demo gallery:
 demo/demo_images.zip). With `--text-only` only text search is
 enabled in /health, and in one browser check the hits showed a
@@ -187,9 +187,10 @@ Open http://127.0.0.1:8014
 - Gallery thumbnails are sent with Cache-Control max-age=3600. After the
   gallery changes, a normal browser window can show old images. Use a
   private window.
-- Plate boxes on the AI demo trucks: on two of three the box sat on a
-  wheel and on the third no plate was found (single examples). No plate
-  accuracy is claimed for the demo images.
+- Plate boxes (not shown in text-only mode): in the author's own runs
+  with trained models, on two of the three AI demo trucks the box sat
+  on a wheel and on the third no plate was found (single examples).
+  No plate accuracy is claimed for the demo images.
 - Tests run on the host (`pytest`), not inside the image. The image is
   smoke-tested: startup, `/health`, and all five panels. Text-only mode
   was started with the demo gallery and checked on `/health` and one
