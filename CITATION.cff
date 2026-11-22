@@ -4,25 +4,25 @@ title: WeatherCam
 type: software
 license: AGPL-3.0-or-later
 authors:
-  - name: To Thi My Tien
+  - To Thi My Tien
 references:
   - type: article
     title: "Veri-Car: Towards Open-world Vehicle Information Retrieval"
     authors:
-      - name: Andrés Muñoz
-      - name: Nancy Thomas
-      - name: Annita Vapsi
-      - name: Daniel Borrajo
+      - Andrés Muñoz
+      - Nancy Thomas
+      - Annita Vapsi
+      - Daniel Borrajo
     journal: arXiv preprint
     year: 2024
     doi: 10.48550/arXiv.2411.06864
   - type: article
     title: "Veri-Car: Towards Open-world Vehicle Information Retrieval"
     authors:
-      - name: Andrés Muñoz
-      - name: Nancy Thomas
-      - name: Annita Vapsi
-      - name: Daniel Borrajo
+      - Andrés Muñoz
+      - Nancy Thomas
+      - Annita Vapsi
+      - Daniel Borrajo
     journal: Neural Computing and Applications
     year: 2025
     volume: 37
@@ -32,10 +32,10 @@ references:
   - type: conference-paper
     title: "Out-of-Distribution Detection with Deep Nearest Neighbors"
     authors:
-      - name: Yiyou Sun
-      - name: Yifei Ming
-      - name: Xiaojin Zhu
-      - name: Yixuan Li
+      - Yiyou Sun
+      - Yifei Ming
+      - Xiaojin Zhu
+      - Yixuan Li
     collection-title: Proceedings of the 39th International Conference on Machine Learning
     year: 2022
     start: 20827
@@ -44,68 +44,68 @@ references:
   - type: software
     title: OpenCLIP
     authors:
-      - name: Gabriel Ilharco
-      - name: Mitchell Wortsman
-      - name: Ross Wightman
-      - name: Cade Gordon
-      - name: Nicholas Carlini
-      - name: Rohan Taori
-      - name: Achal Dave
-      - name: Vaishaal Shankar
-      - name: Hongseok Namkoong
-      - name: John Miller
-      - name: Hannaneh Hajishirzi
-      - name: Ali Farhadi
-      - name: Ludwig Schmidt
+      - Gabriel Ilharco
+      - Mitchell Wortsman
+      - Ross Wightman
+      - Cade Gordon
+      - Nicholas Carlini
+      - Rohan Taori
+      - Achal Dave
+      - Vaishaal Shankar
+      - Hongseok Namkoong
+      - John Miller
+      - Hannaneh Hajishirzi
+      - Ali Farhadi
+      - Ludwig Schmidt
     version: "0.1"
     year: 2021
     doi: 10.5281/zenodo.5143773
   - type: conference-paper
     title: "Learning Transferable Visual Models From Natural Language Supervision"
     authors:
-      - name: Alec Radford
-      - name: Jong Wook Kim
-      - name: Chris Hallacy
-      - name: A. Ramesh
-      - name: Gabriel Goh
-      - name: Sandhini Agarwal
-      - name: Girish Sastry
-      - name: Amanda Askell
-      - name: Pamela Mishkin
-      - name: Jack Clark
-      - name: Gretchen Krueger
-      - name: Ilya Sutskever
+      - Alec Radford
+      - Jong Wook Kim
+      - Chris Hallacy
+      - A. Ramesh
+      - Gabriel Goh
+      - Sandhini Agarwal
+      - Girish Sastry
+      - Amanda Askell
+      - Pamela Mishkin
+      - Jack Clark
+      - Gretchen Krueger
+      - Ilya Sutskever
     collection-title: ICML
     year: 2021
   - type: conference-paper
     title: "LAION-5B: An open large-scale dataset for training next generation image-text models"
     authors:
-      - name: Christoph Schuhmann
-      - name: Romain Beaumont
-      - name: Richard Vencu
-      - name: Cade W Gordon
-      - name: Ross Wightman
-      - name: Mehdi Cherti
-      - name: Theo Coombes
-      - name: Aarush Katta
-      - name: Clayton Mullis
-      - name: Mitchell Wortsman
-      - name: Patrick Schramowski
-      - name: Srivatsa R Kundurthy
-      - name: Katherine Crowson
-      - name: Ludwig Schmidt
-      - name: Robert Kaczmarczyk
-      - name: Jenia Jitsev
+      - Christoph Schuhmann
+      - Romain Beaumont
+      - Richard Vencu
+      - Cade W Gordon
+      - Ross Wightman
+      - Mehdi Cherti
+      - Theo Coombes
+      - Aarush Katta
+      - Clayton Mullis
+      - Mitchell Wortsman
+      - Patrick Schramowski
+      - Srivatsa R Kundurthy
+      - Katherine Crowson
+      - Ludwig Schmidt
+      - Robert Kaczmarczyk
+      - Jenia Jitsev
     collection-title: Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track
     year: 2022
     url: https://openreview.net/forum?id=M3Y74vmsMcY
   - type: conference-paper
     title: Large-scale vehicle re-identification in urban surveillance videos
     authors:
-      - name: Xinchen Liu
-      - name: Wu Liu
-      - name: Huadong Ma
-      - name: Huiyuan Fu
+      - Xinchen Liu
+      - Wu Liu
+      - Huadong Ma
+      - Huiyuan Fu
     collection-title: ICME 2016
     year: 2016
     start: 1
@@ -114,10 +114,10 @@ references:
   - type: conference-paper
     title: "A Deep Learning-Based Approach to Progressive Vehicle Re-identification for Urban Surveillance"
     authors:
-      - name: Xinchen Liu
-      - name: Wu Liu
-      - name: Tao Mei
-      - name: Huadong Ma
+      - Xinchen Liu
+      - Wu Liu
+      - Tao Mei
+      - Huadong Ma
     collection-title: European Conference on Computer Vision
     year: 2016
     start: 869
@@ -126,10 +126,10 @@ references:
   - type: article
     title: "PROVID: Progressive and Multimodal Vehicle Reidentification for Large-Scale Urban Surveillance"
     authors:
-      - name: Xinchen Liu
-      - name: Wu Liu
-      - name: Tao Mei
-      - name: Huadong Ma
+      - Xinchen Liu
+      - Wu Liu
+      - Tao Mei
+      - Huadong Ma
     journal: IEEE Transactions on Multimedia
     year: 2018
     volume: 20
@@ -139,21 +139,21 @@ references:
   - type: article
     title: "DAWN: Vehicle Detection in Adverse Weather Nature Dataset"
     authors:
-      - name: Mourad A. Kenk
-      - name: Mahmoud Hassaballah
+      - Mourad A. Kenk
+      - Mahmoud Hassaballah
     journal: arXiv preprint
     year: 2020
     doi: 10.48550/arXiv.2008.05402
   - type: conference-paper
     title: "Towards End-to-End License Plate Detection and Recognition: A Large Dataset and Baseline"
     authors:
-      - name: Zhenbo Xu
-      - name: Wei Yang
-      - name: Ajin Meng
-      - name: Nanxue Lu
-      - name: Huan Huang
-      - name: Changchun Ying
-      - name: Liusheng Huang
+      - Zhenbo Xu
+      - Wei Yang
+      - Ajin Meng
+      - Nanxue Lu
+      - Huan Huang
+      - Changchun Ying
+      - Liusheng Huang
     collection-title: Proceedings of the European Conference on Computer Vision (ECCV)
     year: 2018
     start: 255
@@ -162,16 +162,16 @@ references:
   - type: conference-paper
     title: "A Large and Diverse Dataset for Improved Vehicle Make and Model Recognition"
     authors:
-      - name: Faezeh Tafazzoli
-      - name: Hichem Frigui
-      - name: Keishin Nishiyama
+      - Faezeh Tafazzoli
+      - Hichem Frigui
+      - Keishin Nishiyama
     collection-title: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) Workshops
     year: 2017
     doi: 10.1109/CVPRW.2017.121
   - type: article
     title: "Clustering to minimize the maximum intercluster distance"
     authors:
-      - name: Teofilo F. Gonzalez
+      - Teofilo F. Gonzalez
     journal: Theoretical Computer Science
     year: 1985
     volume: 38
@@ -182,11 +182,11 @@ references:
   - type: conference-paper
     title: "Total Recall: Automatic Query Expansion with a Generative Feature Model for Object Retrieval"
     authors:
-      - name: Ondřej Chum
-      - name: James Philbin
-      - name: Josef Sivic
-      - name: Michael Isard
-      - name: Andrew Zisserman
+      - Ondřej Chum
+      - James Philbin
+      - Josef Sivic
+      - Michael Isard
+      - Andrew Zisserman
     collection-title: IEEE 11th International Conference on Computer Vision (ICCV)
     year: 2007
     start: 1
@@ -195,7 +195,7 @@ references:
   - type: article
     title: "Binary codes capable of correcting deletions, insertions and reversals"
     authors:
-      - name: Vladimir I. Levenshtein
+      - Vladimir I. Levenshtein
     journal: Soviet Physics Doklady
     year: 1966
     volume: 10
@@ -205,8 +205,8 @@ references:
   - type: article
     title: "On a test of whether one of two random variables is stochastically larger than the other"
     authors:
-      - name: H. B. Mann
-      - name: D. R. Whitney
+      - H. B. Mann
+      - D. R. Whitney
     journal: The Annals of Mathematical Statistics
     year: 1947
     volume: 18
@@ -217,7 +217,7 @@ references:
   - type: article
     title: "Probable inference, the law of succession, and statistical inference"
     authors:
-      - name: Edwin B. Wilson
+      - Edwin B. Wilson
     journal: Journal of the American Statistical Association
     year: 1927
     volume: 22
@@ -228,7 +228,7 @@ references:
   - type: article
     title: "Efficiency of a good but not linear set union algorithm"
     authors:
-      - name: Robert Endre Tarjan
+      - Robert Endre Tarjan
     journal: Journal of the ACM
     year: 1975
     volume: 22
