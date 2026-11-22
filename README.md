@@ -85,7 +85,8 @@ The main environment needs only numpy, pyyaml, psutil and pillow:
 No datasets, dataset images, plate texts or trained weights are part
 of this repository. The one exception is `demo/`: 39 AI-generated
 images with AI-generated plates, and their embeddings (these are not
-dataset images). Files under `eval/` and `scripts/queries.json` list
+dataset images; details in demo/PROMPTS.md). Files under `eval/` and
+`scripts/queries.json` list
 file names of VeRi, CCPD and VMMRdb images (some with placeholder
 paths such as /path/to/) but contain no images. The datasets (VeRi, DAWN,
 CCPD2019, VMMRdb) must be obtained from their owners under their own
