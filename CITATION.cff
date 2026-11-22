@@ -168,3 +168,71 @@ references:
     collection-title: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) Workshops
     year: 2017
     doi: 10.1109/CVPRW.2017.121
+  - type: article
+    title: "Clustering to minimize the maximum intercluster distance"
+    authors:
+      - name: Teofilo F. Gonzalez
+    journal: Theoretical Computer Science
+    year: 1985
+    volume: 38
+    issue: "2-3"
+    start: 293
+    end: 306
+    doi: 10.1016/0304-3975(85)90224-5
+  - type: conference-paper
+    title: "Total Recall: Automatic Query Expansion with a Generative Feature Model for Object Retrieval"
+    authors:
+      - name: Ondřej Chum
+      - name: James Philbin
+      - name: Josef Sivic
+      - name: Michael Isard
+      - name: Andrew Zisserman
+    collection-title: IEEE 11th International Conference on Computer Vision (ICCV)
+    year: 2007
+    start: 1
+    end: 8
+    doi: 10.1109/ICCV.2007.4408891
+  - type: article
+    title: "Binary codes capable of correcting deletions, insertions and reversals"
+    authors:
+      - name: Vladimir I. Levenshtein
+    journal: Soviet Physics Doklady
+    year: 1966
+    volume: 10
+    issue: 8
+    start: 707
+    end: 710
+  - type: article
+    title: "On a test of whether one of two random variables is stochastically larger than the other"
+    authors:
+      - name: H. B. Mann
+      - name: D. R. Whitney
+    journal: The Annals of Mathematical Statistics
+    year: 1947
+    volume: 18
+    issue: 1
+    start: 50
+    end: 60
+    doi: 10.1214/aoms/1177730491
+  - type: article
+    title: "Probable inference, the law of succession, and statistical inference"
+    authors:
+      - name: Edwin B. Wilson
+    journal: Journal of the American Statistical Association
+    year: 1927
+    volume: 22
+    issue: 158
+    start: 209
+    end: 212
+    doi: 10.2307/2276774
+  - type: article
+    title: "Efficiency of a good but not linear set union algorithm"
+    authors:
+      - name: Robert Endre Tarjan
+    journal: Journal of the ACM
+    year: 1975
+    volume: 22
+    issue: 2
+    start: 215
+    end: 225
+    doi: 10.1145/321879.321884
