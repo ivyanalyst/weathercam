@@ -80,6 +80,49 @@ The main environment needs only numpy, pyyaml, psutil and pillow:
     pip install pytest
     python3 -m pytest -q
 
+## Human review
+
+A small review tool lets one person check the models' outputs image by
+image. Its summary compares three things: the reviewer's answer, the
+model's output and the dataset label. It was used on test images only.
+Reviews of test images are never used to tune the detector, OCR, heads
+or fuzzy limit.
+
+How it is built:
+
+- scripts/build_review_queue.py makes a seeded queue of VeRi and CCPD
+  test images. It checks SHA-256 hashes of its input files and leaves
+  out 13 CCPD images whose labelled box is not on the plate.
+- scripts/review_tool.py serves one local page (Python http.server, no
+  extra packages, bound to 127.0.0.1). The image is drawn on a canvas
+  with zoom 1 to 4. The reviewer answers colour, type, brand and view,
+  says whether the vehicle is visible, draws the plate box and types
+  the plate text. Each item also has Unsure, Can't judge (with a
+  reason), a note and Back. Answers are appended to a JSON-lines log.
+- scripts/review_summary.py reads the queue and log and reports
+  agreement with Wilson 95% intervals. Sources are never pooled.
+- src/weathercam/review holds the queue and verdict logic, with tests.
+
+Colour, type, brand, view and vehicle visibility were answered blind.
+Plate text was judged with the model's reading shown.
+
+Result of the one run so far (local; the log is not in this
+repository). One reviewer, 20 of the 100 VeRi queue images, no CCPD
+image (0 of 131 reviewed):
+
+- colour: agree 15/18 (Wilson 0.608-0.942), 2 cannot judge
+- type: agree 16/20 (0.584-0.919)
+- view: agree 13/20 (0.433-0.819)
+- brand: agree 6/13 (0.232-0.709), 7 cannot judge
+- plate text: 0 of 20 could be judged
+
+These are single-reviewer numbers on a small sample. They are not an
+accuracy measurement, and a model brand of "unknown" can never agree.
+
+The tool needs VeRi and CCPD files that are not part of this
+repository, so it cannot be run from a fresh clone. It is included to
+show how the review was done. No review images or logs are published.
+
 ## Data and licences
 
 No datasets, dataset images, plate texts or trained weights are part
