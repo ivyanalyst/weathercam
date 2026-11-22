@@ -96,26 +96,29 @@ The main environment needs only numpy, pyyaml, psutil and pillow:
       review/      review queue and verdict log
       service/     app, handlers, model heads, worker clients
 
-| Method | File | What the code does |
-|---|---|---|
-| Softmax regression | attributes/softmax.py | full-batch gradient descent, L2 on weights |
-| Zero-shot classes | attributes/zeroshot.py | prompt-averaged class vectors, scaled similarity softmax, per-track mean |
-| Metric head | retrieval/metric_head.py | linear projection, class prototypes, scaled cosine logits, softmax cross-entropy, hand-written gradients, SGD with momentum |
-| Query expansion | retrieval/rerank.py | adds the weighted mean of the nearest gallery neighbours to the query, then re-normalises |
-| k-center greedy | retrieval/mining.py | farthest-point selection on unit vectors, cosine |
-| k-NN distance | retrieval/ood.py | k-th nearest neighbour distance on unit vectors |
-| Plate decoding | plates/ocr.py | 7 fixed positions, softmax and argmax each, confidence = lowest position |
-| Fuzzy plate match | plates/fuzzy.py | Levenshtein distance within a maximum number of edits |
-| AUROC | core/roc_metrics.py | mid-ranks, Mann-Whitney form, ties count half |
-| NMS | core/nms.py | greedy, per class, IoU threshold 0.5 by default |
-| Grouped split | data/split.py | seeded, class-stratified, groups never divided |
-| Near-duplicate groups | data/neardup.py | 16x16 difference hash (256 bits), Hamming distance, union-find over all pairs within a threshold |
-| Review queue selection | review/queue.py | seeded; one random image per vehicle from the chosen split part; vehicles grouped by camera; images taken from cameras in turn until n |
+| Method | File | What the code does | Based on |
+|---|---|---|---|
+| Softmax regression | attributes/softmax.py | full-batch gradient descent, L2 on weights | - |
+| Zero-shot classes | attributes/zeroshot.py | prompt-averaged class vectors, scaled similarity softmax, per-track mean | - |
+| Metric head | retrieval/metric_head.py | linear projection, class prototypes, scaled cosine logits, softmax cross-entropy, hand-written gradients, SGD with momentum | - |
+| Query expansion | retrieval/rerank.py | adds the weighted mean of the nearest gallery neighbours to the query, then re-normalises | Chum et al. 2007 (neighbour averaging only, no spatial verification) |
+| k-center greedy | retrieval/mining.py | farthest-point selection on unit vectors, cosine | Gonzalez 1985 |
+| k-NN distance | retrieval/ood.py | k-th nearest neighbour distance on unit vectors | Sun et al. 2022 |
+| Plate decoding | plates/ocr.py | 7 fixed positions, softmax and argmax each, confidence = lowest position | - |
+| Fuzzy plate match | plates/fuzzy.py | Levenshtein distance within a maximum number of edits | Levenshtein 1966 |
+| AUROC | core/roc_metrics.py | mid-ranks, Mann-Whitney form, ties count half | Mann and Whitney 1947 |
+| Wilson interval | attributes/weather.py | Wilson score interval for a proportion, z = 1.96 by default, clipped to 0..1 | Wilson 1927 |
+| NMS | core/nms.py | greedy, per class, IoU threshold 0.5 by default | - |
+| Grouped split | data/split.py | seeded, class-stratified, groups never divided | - |
+| Near-duplicate groups | data/neardup.py | 16x16 difference hash (256 bits), Hamming distance, union-find over all pairs within a threshold | Tarjan 1975 (union-find with path compression) |
+| Review queue selection | review/queue.py | seeded; one random image per vehicle from the chosen split part; vehicles grouped by camera; images taken from cameras in turn until n | - |
 
 These parts are written in NumPy (the hash also uses Pillow). The
-pretrained models are not in this table. The review queue selection is
-the author's own simple design. No method in this table is claimed to
-be new.
+pretrained models are not in this table. The review queue selection is a
+simple design written for this project: seeded, one image per vehicle,
+cameras taken in turn. "Based on" names the published method the code
+resembles, not a claim that it reproduces the paper. No method in this
+table is claimed to be new.
 
 ## Human review
 
