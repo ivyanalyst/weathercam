@@ -290,7 +290,7 @@ reference.
 | rain | 0.216 | 0.206 | 0.168 | 0.127 |
 | sand storm | 0.201 | 0.178 | 0.105 | 0.035 |
 
-## Weather on vehicle crops (exploratory, not a measurement)
+## Part C: weather on vehicle crops (exploratory, not a measurement)
 
 One quick check, run once. The script is not in the repo. DAWN
 validation split (split_v1), 161 images, the saved weather head,
