@@ -290,6 +290,23 @@ reference.
 | rain | 0.216 | 0.206 | 0.168 | 0.127 |
 | sand storm | 0.201 | 0.178 | 0.105 | 0.035 |
 
+## Weather on vehicle crops (exploratory, not a measurement)
+
+One quick check, run once. The script is not in the repo. DAWN
+validation split (split_v1), 161 images, the saved weather head,
+ground-truth boxes (car, bus, truck, motorcycle). Boxes with a short
+side under 48 px were dropped (330 boxes); every image kept at least
+one box.
+
+Whole image: 127 of 161 correct. Largest crop: 90 (51 right to wrong,
+14 wrong to right). Mean over all crops: 91 (48, 12). Rain fell from 20
+of 31 to 3 and 1 of 31. Classes have 31 to 53 images.
+
+The head was trained on whole images. No head was trained on crops, no
+detector boxes were used, and the validation split also chose the head's
+settings. The image encoder centre-crops each input to a square. The
+service sends the whole image to the weather route.
+
 ## Threshold proposal (not applied; nothing was added to the page)
 
 Proposal only: if an OOD flag is ever added for "other-source vehicle
