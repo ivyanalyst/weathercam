@@ -2,10 +2,13 @@
 
 Research code for vehicle attributes, plate reading, text-to-image retrieval and data mining on CCTV-style images, with a focus on adverse weather. An independent research and engineering project exploring vehicle attribute recognition, retrieval, and OOD behavior under adverse weather. Built for research and educational use.
 
-The pipeline is inspired by Veri-Car (Muñoz et al., arXiv 2411.06864):
-
-    detect vehicle -> crop -> OOD check -> attributes (colour, type, brand) -> plate detect + read
-    -> embed -> text-to-image search -> mining / active learning
+The design is inspired by Veri-Car (Muñoz et al., arXiv 2411.06864).
+The service takes an image and, per route, returns weather, attributes
+(colour, type, brand), an OOD score, plate boxes and text, or
+text-to-image search over a gallery. It does not detect or crop
+vehicles. Weather is judged on the whole image; send vehicle-centred
+images for the other routes. Vehicle detection is evaluated offline on
+DAWN.
 
 Everything below is one seed and one embedding backbone (frozen OpenCLIP ViT-B/16, laion2b_s34b_b88k, with small heads). Test data was not used for tuning: each test set was scored once, with settings fixed beforehand.
 
