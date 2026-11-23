@@ -229,6 +229,13 @@ Without Docker:
       --text-only --gallery demo/gallery_demo.npz \
       --image-zip demo/demo_images.zip --port 8014
 
+Queries to try in the demo (type in the text box, set k to 3). In one run
+on the author's labels, "a bus" and "a truck" each returned all 3 labelled
+buses or trucks as the top 3, and "a blue car" returned 3 blue cars. Other
+queries rank worse: "a green car" had 2 green cars in its top 3. This is a
+single run on 39 images, not a measurement, and text search was not
+validated on this gallery.
+
 B. Your own data. VeRi is not included; get it from its authors. Build
 embeddings with research/extract_embeddings.py and a gallery with
 scripts/build_gallery.py. The other panels need heads you train
